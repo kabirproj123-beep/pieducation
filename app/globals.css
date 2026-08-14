@@ -1,0 +1,310 @@
+@import "tailwindcss";
+
+/* =========================================================================
+   College discovery platform — Maharashtra
+   Sky-blue brand on navy + slate. Dense, data-forward UI.
+   ========================================================================= */
+@theme {
+  /* Brand */
+  --color-brand: #38b6ff;
+  --color-brand-600: #0ea5e9;
+  --color-brand-700: #0284c7;
+  --color-brand-tint: #e0f2fe;
+
+  /* Surfaces */
+  --color-paper: #ffffff;
+  --color-paper-2: #f8fafc;
+  --color-paper-3: #f1f5f9;
+  --color-navy: #0f172a;
+  --color-navy-2: #1e293b;
+
+  /* Ink */
+  --color-ink: #0f172a;
+  --color-muted: #475569;
+  --color-faint: #94a3b8;
+  --color-on-navy-dim: #cbd5e1;
+
+  /* Semantic */
+  --color-success: #10b981;
+  --color-warn: #f59e0b;
+  --color-danger: #ef4444;
+
+  /* Lines */
+  --color-line: #e2e8f0;
+  --color-line-strong: #cbd5e1;
+  --color-line-navy: #334155;
+
+  /* Type */
+  --font-display: var(--font-bricolage);
+  --font-body: var(--font-inter);
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ---- base ---- */
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body), system-ui, -apple-system, sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+  letter-spacing: -0.006em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, .font-display {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+}
+
+/* ---- layout primitive ---- */
+.container-x {
+  width: 100%;
+  max-width: 82rem;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+}
+@media (min-width: 768px) {
+  .container-x { padding-inline: 2rem; }
+}
+
+/* Eyebrow / section label */
+.eyebrow {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-brand-700);
+}
+
+/* Fluid display scale */
+.display-xl { font-size: clamp(2.4rem, 5.4vw, 4rem); }
+.display-lg { font-size: clamp(1.9rem, 3.8vw, 2.9rem); }
+.display-md { font-size: clamp(1.45rem, 2.3vw, 1.9rem); }
+
+.lede {
+  font-size: clamp(1.02rem, 1.3vw, 1.15rem);
+  line-height: 1.6;
+  color: var(--color-muted);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.65rem;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  transition: transform 0.2s var(--ease-out-soft), background-color 0.2s var(--ease-out-soft),
+    box-shadow 0.2s var(--ease-out-soft);
+}
+.btn:active { transform: scale(0.98); }
+.btn-primary {
+  background: var(--color-brand-600);
+  color: #fff;
+  box-shadow: 0 8px 20px -8px rgb(14 165 233 / 0.55);
+}
+.btn-primary:hover { background: var(--color-brand-700); }
+.btn-navy { background: var(--color-navy); color: #fff; }
+.btn-navy:hover { background: var(--color-navy-2); }
+.btn-ghost {
+  background: #fff;
+  color: var(--color-ink);
+  border: 1px solid var(--color-line-strong);
+}
+.btn-ghost:hover { background: var(--color-paper-2); }
+
+/* Cards */
+.card {
+  border: 1px solid var(--color-line);
+  background: #fff;
+  border-radius: 1rem;
+  transition: transform 0.3s var(--ease-out-soft), box-shadow 0.3s var(--ease-out-soft),
+    border-color 0.3s var(--ease-out-soft);
+}
+.card-hover:hover {
+  transform: translateY(-3px);
+  border-color: color-mix(in srgb, var(--color-brand) 55%, transparent);
+  box-shadow: 0 20px 40px -24px rgb(15 23 42 / 0.28);
+}
+
+/* Chip / badge */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border-radius: 999px;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  border: 1px solid var(--color-line);
+  background: var(--color-paper-2);
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+.chip-brand {
+  background: var(--color-brand-tint);
+  border-color: color-mix(in srgb, var(--color-brand) 40%, transparent);
+  color: var(--color-brand-700);
+}
+
+/* Data table */
+.dtable { width: 100%; border-collapse: separate; border-spacing: 0; }
+.dtable th {
+  text-align: left;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-faint);
+  font-weight: 700;
+  padding: 0.75rem 1rem;
+  background: var(--color-paper-2);
+  border-bottom: 1px solid var(--color-line);
+  white-space: nowrap;
+}
+.dtable td {
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid var(--color-line);
+  vertical-align: middle;
+}
+.dtable tbody tr:hover { background: var(--color-paper-2); }
+
+/* Accessible focus */
+:where(a, button, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-brand-600);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+::selection { background: var(--color-brand); color: #06263a; }
+
+/* Marquee */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.marquee-track { animation: marquee 38s linear infinite; will-change: transform; }
+.marquee-mask {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+}
+
+/* Scroll-margin so in-page nav clears the sticky header */
+[id] { scroll-margin-top: 6rem; }
+
+/* ---------------------------------------------------------------------------
+   Pointer affordance
+
+   Everything that responds to a click says so. `button` defaults to the arrow
+   cursor in every browser, which reads as "not clickable" on a flat UI like
+   this one — the buttons here have no bevel to give the game away.
+   Disabled controls keep the not-allowed cursor.
+--------------------------------------------------------------------------- */
+button,
+summary,
+select,
+label:has(input[type="checkbox"], input[type="radio"]),
+[role="button"],
+[role="tab"],
+[role="option"],
+a[href] {
+  cursor: pointer;
+}
+button:disabled,
+[aria-disabled="true"],
+.btn:disabled {
+  cursor: not-allowed;
+}
+
+/* ---------------------------------------------------------------------------
+   Modal dialogs
+
+   Native <dialog> starts as display:none, so a plain transition has nothing to
+   animate from. @starting-style gives the open state an entry frame; keeping
+   `display` and `overlay` in the transition list lets the browser hold the
+   element in the top layer while it animates out.
+--------------------------------------------------------------------------- */
+dialog.modal,
+dialog.modal::backdrop {
+  transition:
+    opacity 0.28s var(--ease-out-soft),
+    translate 0.28s var(--ease-out-soft),
+    display 0.28s allow-discrete,
+    overlay 0.28s allow-discrete;
+}
+dialog.modal {
+  opacity: 0;
+  translate: 0 1rem;
+}
+dialog.modal[open] {
+  opacity: 1;
+  translate: 0 0;
+}
+@starting-style {
+  dialog.modal[open] {
+    opacity: 0;
+    translate: 0 1rem;
+  }
+}
+dialog.modal::backdrop { opacity: 0; }
+dialog.modal[open]::backdrop { opacity: 1; }
+@starting-style {
+  dialog.modal[open]::backdrop { opacity: 0; }
+}
+
+/* ---------------------------------------------------------------------------
+   Loading skeletons
+
+   Shown by the route-level loading.tsx files while a server render is in
+   flight, so a navigation paints something immediately instead of leaving the
+   previous page on screen with no sign anything happened.
+--------------------------------------------------------------------------- */
+@keyframes skeleton-pulse {
+  50% { opacity: 0.45; }
+}
+.skeleton {
+  border-radius: 0.5rem;
+  background: var(--color-paper-3);
+  animation: skeleton-pulse 1.4s var(--ease-out-soft) infinite;
+}
+
+/* Indeterminate bar for the top-of-page navigation indicator. */
+@keyframes nav-progress {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+.nav-progress::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-brand-600) 40%,
+    var(--color-brand) 60%,
+    transparent
+  );
+  animation: nav-progress 1s var(--ease-out-soft) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .marquee-track { animation: none; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
