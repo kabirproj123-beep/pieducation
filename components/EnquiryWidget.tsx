@@ -20,6 +20,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { STREAMS } from "@/lib/colleges";
+import { COUNSELLOR_META_KEY, counsellors, NO_COUNSELLOR_PREFERENCE } from "@/lib/content";
 import { LeadForm } from "./LeadForm";
 
 /** How long a visitor gets to read the page before we ask. */
@@ -147,6 +148,12 @@ export function EnquiryWidget() {
                 type: "select",
                 required: true,
                 options: [...STREAMS, "Study abroad", "Education loan", "Not sure yet"],
+              },
+              {
+                name: COUNSELLOR_META_KEY,
+                label: "Preferred counsellor (optional)",
+                type: "select",
+                options: [NO_COUNSELLOR_PREFERENCE, ...counsellors],
               },
               { name: "city", label: "Preferred city (optional)" },
               { name: "message", label: "Anything we should know?" },

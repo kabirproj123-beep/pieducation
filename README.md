@@ -8,10 +8,10 @@ colleges; every tool funnels into a lead form; the client reads the leads at
 Modelled on [promoteducation.com](https://promoteducation.com) — same page
 structure and funnel, scoped to one state and backed by our own scraped dataset.
 
-> **Draft note:** "PiEducations" is the brand this copy runs under. Phone, email
-> and address in `site` (`lib/content.ts`) are still placeholders — swap them for
-> the real ones. This deployment is otherwise identical to the sibling site; only
-> the name and the Firebase project differ.
+> **Draft note:** "PIeducations" is the brand this copy runs under. Phone, email
+> and address in `site` (`lib/content.ts`) are the live ones. This deployment is
+> otherwise identical to the sibling site; only the name and the Firebase project
+> differ.
 
 ## Run it
 

@@ -52,19 +52,51 @@ export type FaqItem = {
 const FOUNDED = 2013;
 
 export const site = {
-  name: "PiEducations",
+  name: "PIeducations",
   tagline: "Maharashtra college discovery & admissions",
   founded: FOUNDED,
   yearsGuiding: `${new Date().getFullYear() - FOUNDED}+`,
   description:
     "Compare every major college in Maharashtra — Engineering, Medical, Management and Law. Real fees, placements and rankings, plus free counselling from admission experts.",
-  location: "Pune, Maharashtra",
-  phone: "+91 90000 00000",
-  whatsapp: "+919000000000",
-  email: "hello@pieducations.example",
+  location: "Wakad, Pune, Maharashtra",
+  phone: "+91 99170 70979",
+  whatsapp: "+919917070979",
+  email: "support@pieducations.in",
   instagram: "https://instagram.com",
-  address: "Level 4, FC Road, Shivajinagar, Pune 411005",
+  address:
+    "Shop No 428, PI Educations Consultancy, The Address Commercia, Hinjawadi Rd, Shankar Kalat Nagar, Wakad, Pune, Pimpri-Chinchwad, Maharashtra 411057",
 };
+
+/**
+ * The counselling team, offered as a dropdown on the enquiry form so a returning
+ * student can ask for whoever they already spoke to. Optional on the form —
+ * "No preference" routes the lead to whoever is free.
+ */
+export const counsellors = [
+  "Amisha P.",
+  "Shravani R.",
+  "Anurag J.",
+  "Saransh S.",
+  "Ashutosh M.",
+  "Prakshik W.",
+] as const;
+
+export const NO_COUNSELLOR_PREFERENCE = "No preference";
+
+/** The `meta` key the enquiry form writes the counsellor choice under. Shared
+ *  so the form and the admin filter can't drift apart. */
+export const COUNSELLOR_META_KEY = "counsellor";
+
+/**
+ * Reads a lead's counsellor choice back out of its meta. Null covers all three
+ * ways of not asking for anyone: older leads from before the field existed, an
+ * empty value, and an explicit "No preference".
+ */
+export function counsellorFromMeta(meta: Record<string, string> | undefined): string | null {
+  const value = meta?.[COUNSELLOR_META_KEY]?.trim();
+  if (!value || value === NO_COUNSELLOR_PREFERENCE) return null;
+  return value;
+}
 
 export const nav = [
   { label: "Colleges", href: "/colleges" },
@@ -209,7 +241,7 @@ export const testimonials: Testimonial[] = [
   {
     id: "t1",
     quote:
-      "I came in fixated on one plan. PiEducations pushed back with data, and I ended up somewhere better than my dream school — with a scholarship I didn't know I qualified for.",
+      "I came in fixated on one plan. PIeducations pushed back with data, and I ended up somewhere better than my dream school — with a scholarship I didn't know I qualified for.",
     name: "Ananya R.",
     detail: "MS Computer Science · Purdue",
     avatar: U("1494790108377-be9c29b29330"),

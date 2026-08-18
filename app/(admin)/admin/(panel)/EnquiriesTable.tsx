@@ -15,10 +15,14 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { LEAD_STATUSES, type Lead, type LeadStatus } from "@/lib/leadTypes";
+import { COUNSELLOR_META_KEY, counsellorFromMeta, counsellors } from "@/lib/content";
 import { setStatus } from "./actions";
 import ClientPager from "./_components/ClientPager";
 
 const PER_PAGE = 25;
+
+/** Filter value for leads that named nobody — distinct from "" (= any). */
+const NO_COUNSELLOR = "__none__";
 
 const SOURCE_LABEL: Record<string, string> = {
   "compare-unlock": "Comparison unlock",
@@ -71,7 +75,7 @@ function StatusForm({ lead }: { lead: Lead }) {
 }
 
 function Meta({ lead }: { lead: Lead }) {
-  const entries = Object.entries(lead.meta ?? {});
+  const entries = Object.entries(lead.meta ?? {}).filter(([k]) => k !== COUNSELLOR_META_KEY);
   if (entries.length === 0) return <span className="text-faint">—</span>;
   return (
     <>
@@ -86,6 +90,7 @@ function Meta({ lead }: { lead: Lead }) {
 
 export default function EnquiriesTable({ leads }: { leads: Lead[] }) {
   const [filter, setFilter] = useState<LeadStatus | null>(null);
+  const [who, setWho] = useState("");
   const [q, setQ] = useState("");
   const [page, setPage] = useState(1);
 
@@ -95,19 +100,49 @@ export default function EnquiriesTable({ leads }: { leads: Lead[] }) {
     return c;
   }, [leads]);
 
+  /**
+   * The roster drives the option order, but anyone who appears in the data and
+   * has since left it still gets an option — otherwise their leads would be
+   * unreachable through the filter.
+   */
+  const whoOptions = useMemo(() => {
+    const inScope = filter ? leads.filter((l) => l.status === filter) : leads;
+    const tally = new Map<string, number>();
+    let none = 0;
+    for (const l of inScope) {
+      const c = counsellorFromMeta(l.meta);
+      if (!c) none += 1;
+      else tally.set(c, (tally.get(c) ?? 0) + 1);
+    }
+    const roster: string[] = [...counsellors];
+    const extras = [...tally.keys()].filter((c) => !roster.includes(c)).sort();
+    return {
+      none,
+      total: inScope.length,
+      named: [...roster, ...extras].map((name) => ({ name, n: tally.get(name) ?? 0 })),
+    };
+  }, [leads, filter]);
+
   const matching = useMemo(() => {
     const needle = q.trim().toLowerCase();
     return leads.filter((l) => {
       if (filter && l.status !== filter) return false;
+
+      if (who) {
+        const c = counsellorFromMeta(l.meta);
+        if (who === NO_COUNSELLOR ? c !== null : c !== who) return false;
+      }
+
       if (!needle) return true;
       return (
         l.name.toLowerCase().includes(needle) ||
         l.phone.includes(needle) ||
         (l.email ?? "").toLowerCase().includes(needle) ||
-        (l.course ?? "").toLowerCase().includes(needle)
+        (l.course ?? "").toLowerCase().includes(needle) ||
+        (counsellorFromMeta(l.meta) ?? "").toLowerCase().includes(needle)
       );
     });
-  }, [leads, filter, q]);
+  }, [leads, filter, who, q]);
 
   const pageCount = Math.max(1, Math.ceil(matching.length / PER_PAGE));
   // A filter change can leave you past the end of the shorter list.
@@ -158,26 +193,66 @@ export default function EnquiriesTable({ leads }: { leads: Lead[] }) {
       </div>
 
       <div className="space-y-4 p-4 sm:p-6">
-        <input
-          type="search"
-          value={q}
-          onChange={(e) => {
-            setQ(e.target.value);
-            setPage(1);
-          }}
-          placeholder="Search name, phone, email or interest"
-          aria-label="Search enquiries"
-          className="w-full max-w-sm rounded-lg border border-line bg-white px-3 py-2 text-sm"
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            type="search"
+            value={q}
+            onChange={(e) => {
+              setQ(e.target.value);
+              setPage(1);
+            }}
+            placeholder="Search name, phone, email, interest or counsellor"
+            aria-label="Search enquiries"
+            className="w-full max-w-sm rounded-lg border border-line bg-white px-3 py-2 text-sm"
+          />
+
+          <select
+            value={who}
+            onChange={(e) => {
+              setWho(e.target.value);
+              setPage(1);
+            }}
+            aria-label="Filter by counsellor"
+            className="rounded-lg border border-line bg-white px-3 py-2 text-sm"
+          >
+            <option value="">All counsellors ({whoOptions.total})</option>
+            {whoOptions.named.map((c) => (
+              <option key={c.name} value={c.name}>
+                {c.name} ({c.n})
+              </option>
+            ))}
+            <option value={NO_COUNSELLOR}>No preference ({whoOptions.none})</option>
+          </select>
+
+          {(who || q) && (
+            <button
+              type="button"
+              onClick={() => {
+                setWho("");
+                setQ("");
+                setPage(1);
+              }}
+              className="rounded-lg border border-line px-2.5 py-2 text-xs font-semibold text-muted hover:bg-paper-2 hover:text-ink"
+            >
+              Clear
+            </button>
+          )}
+        </div>
 
         {matching.length === 0 ? (
           <div className="card p-12 text-center">
             <p className="font-display text-lg font-bold">
-              {q ? "Nothing matches that search" : filter ? `Nothing ${filter}` : "No enquiries yet"}
+              {q
+                ? "Nothing matches that search"
+                : who
+                  ? "No enquiries for that counsellor"
+                  : filter
+                    ? `Nothing ${filter}`
+                    : "No enquiries yet"}
             </p>
             <p className="mx-auto mt-1 max-w-sm text-sm text-muted">
-              {q || filter
-                ? "Try another status or search."
+              {q || filter || who
+                ? "Try another status, counsellor or search."
                 : "Leads submitted through any form on the site will appear here, newest first."}
             </p>
           </div>
@@ -185,7 +260,7 @@ export default function EnquiriesTable({ leads }: { leads: Lead[] }) {
           <div className="card overflow-hidden">
             {/* desktop */}
             <div className="hidden overflow-x-auto lg:block">
-              <table className="dtable min-w-[64rem]">
+              <table className="dtable min-w-[72rem]">
                 <thead>
                   <tr>
                     <th className="w-1" />
@@ -193,6 +268,7 @@ export default function EnquiriesTable({ leads }: { leads: Lead[] }) {
                     <th>Name</th>
                     <th>Phone</th>
                     <th>Interest</th>
+                    <th>Counsellor</th>
                     <th>Source</th>
                     <th>Details</th>
                     <th>Status</th>
@@ -229,6 +305,9 @@ export default function EnquiriesTable({ leads }: { leads: Lead[] }) {
                             {l.collegeSlug}
                           </Link>
                         )}
+                      </td>
+                      <td className="whitespace-nowrap text-sm">
+                        {counsellorFromMeta(l.meta) ?? <span className="text-faint">—</span>}
                       </td>
                       <td>
                         <span className="chip">{SOURCE_LABEL[l.source] ?? l.source}</span>
@@ -277,6 +356,10 @@ export default function EnquiriesTable({ leads }: { leads: Lead[] }) {
                         <dd className="text-ink">{l.course ?? "—"}</dd>
                       </div>
                       <div className="flex gap-2">
+                        <dt className="text-faint">Counsellor</dt>
+                        <dd className="text-ink">{counsellorFromMeta(l.meta) ?? "—"}</dd>
+                      </div>
+                      <div className="flex gap-2">
                         <dt className="text-faint">Source</dt>
                         <dd>{SOURCE_LABEL[l.source] ?? l.source}</dd>
                       </div>
@@ -286,7 +369,7 @@ export default function EnquiriesTable({ leads }: { leads: Lead[] }) {
                           <dd className="truncate">{l.email}</dd>
                         </div>
                       )}
-                      {Object.keys(l.meta ?? {}).length > 0 && (
+                      {Object.keys(l.meta ?? {}).some((k) => k !== COUNSELLOR_META_KEY) && (
                         <div className="pt-1">
                           <Meta lead={l} />
                         </div>

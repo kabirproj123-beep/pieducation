@@ -28,7 +28,7 @@ export function Header() {
             {site.name.charAt(0)}
           </span>
           <span className="font-display text-[0.95rem] font-extrabold leading-none tracking-tight">
-            <span className="block">{site.name.toUpperCase()}</span>
+            <span className="block">{site.name}</span>
             <span className="block text-[0.62rem] font-semibold tracking-[0.18em] text-brand-700">
               MAHARASHTRA
             </span>
