@@ -38,8 +38,8 @@ export default async function CollegesPage(props: {
   const total = all.length;
   const cities = citiesIn(all);
 
-  const selectCls =
-    "w-full rounded-lg border border-line bg-white px-3 py-2 text-sm font-medium text-ink";
+  const inputCls = "field w-full font-medium";
+  const selectCls = `${inputCls} select`;
 
   return (
     <div className="bg-paper-2">
@@ -70,7 +70,7 @@ export default async function CollegesPage(props: {
                 name="q"
                 defaultValue={q}
                 placeholder="College, city or stream…"
-                className={selectCls}
+                className={inputCls}
               />
             </div>
 

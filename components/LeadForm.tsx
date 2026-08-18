@@ -110,10 +110,6 @@ export function LeadForm({
     );
   }
 
-  const input =
-    "w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm text-ink " +
-    "placeholder:text-faint focus:border-brand-600";
-
   return (
     <form onSubmit={onSubmit} className={compact ? "space-y-2.5" : "space-y-3"} noValidate>
       {title && <p className="font-display text-base font-bold text-ink">{title}</p>}
@@ -129,13 +125,13 @@ export function LeadForm({
       />
 
       <div className={compact ? "space-y-2.5" : "grid gap-2.5 sm:grid-cols-2"}>
-        <input name="name" required placeholder="Full name*" className={input} autoComplete="name" />
+        <input name="name" required placeholder="Full name*" className="field w-full" autoComplete="name" />
         <input
           name="phone"
           required
           inputMode="numeric"
           placeholder="Mobile number*"
-          className={input}
+          className="field w-full"
           autoComplete="tel"
         />
       </div>
@@ -144,29 +140,20 @@ export function LeadForm({
         name="email"
         type="email"
         placeholder="Email (optional)"
-        className={input}
+        className="field w-full"
         autoComplete="email"
       />
 
       {extraFields.map((f) =>
         f.type === "select" ? (
-          <select key={f.name} name={f.name} required={f.required} className={input} defaultValue="">
-            <option value="" disabled>
-              {f.label}
-            </option>
-            {(f.options ?? []).map((o) => (
-              <option key={o} value={o}>
-                {o}
-              </option>
-            ))}
-          </select>
+          <SelectField key={f.name} field={f} />
         ) : (
           <input
             key={f.name}
             name={f.name}
             required={f.required}
             placeholder={f.label}
-            className={input}
+            className="field w-full"
           />
         ),
       )}
@@ -183,5 +170,39 @@ export function LeadForm({
 
       <p className="text-center text-[0.7rem] leading-snug text-faint">{note}</p>
     </form>
+  );
+}
+
+/**
+ * One <select> from `extraFields`.
+ *
+ * The first option carries the label — there is no room for a separate one in a
+ * form this compact — so it has to read as a prompt rather than as a chosen
+ * answer. `data-empty` is what tells the stylesheet to grey it while nothing is
+ * picked. An optional field keeps that first option selectable, so a visitor
+ * who picks a counsellor by accident can back out of it.
+ */
+function SelectField({ field }: { field: ExtraField }) {
+  const [empty, setEmpty] = useState(true);
+
+  return (
+    <select
+      name={field.name}
+      required={field.required}
+      aria-label={field.label}
+      defaultValue=""
+      data-empty={empty}
+      onChange={(e) => setEmpty(e.currentTarget.value === "")}
+      className="field select w-full"
+    >
+      <option value="" disabled={field.required}>
+        {field.label}
+      </option>
+      {(field.options ?? []).map((o) => (
+        <option key={o} value={o}>
+          {o}
+        </option>
+      ))}
+    </select>
   );
 }

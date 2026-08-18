@@ -79,10 +79,9 @@ export default function StudyAbroadPage() {
               trade-offs.
             </p>
             <LeadForm
-              source="counselling"
+              source="study-abroad"
               compact
               submitLabel="Get free assessment"
-              hiddenMeta={{ interest: "study-abroad" }}
               extraFields={[
                 {
                   name: "destination",

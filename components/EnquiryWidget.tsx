@@ -27,6 +27,10 @@ import { LeadForm } from "./LeadForm";
 const AUTO_OPEN_MS = 8000;
 const SEEN_KEY = "enquiry-prompted";
 
+/** Dispatched on `window` by anything that wants this dialog open — the mobile
+ *  action bar, where the floating button below is hidden. */
+export const ENQUIRY_OPEN_EVENT = "enquiry:open";
+
 export function EnquiryWidget() {
   const ref = useRef<HTMLDialogElement>(null);
   const [open, setOpen] = useState(false);
@@ -67,6 +71,16 @@ export function EnquiryWidget() {
     return () => clearTimeout(id);
   }, [show]);
 
+  // Opened from elsewhere — the mobile bar owns the phone's enquiry CTA.
+  useEffect(() => {
+    const onAsk = () => {
+      markSeen();
+      show();
+    };
+    window.addEventListener(ENQUIRY_OPEN_EVENT, onAsk);
+    return () => window.removeEventListener(ENQUIRY_OPEN_EVENT, onAsk);
+  }, [show]);
+
   // showModal() blocks interaction but not scrolling — the page still moves
   // under the dialog on wheel/touch without this.
   useEffect(() => {
@@ -95,7 +109,9 @@ export function EnquiryWidget() {
           show();
         }}
         aria-haspopup="dialog"
-        className="btn btn-primary fixed right-4 bottom-20 z-40 gap-2 px-4 py-3 text-sm shadow-lg shadow-navy/20 lg:right-6 lg:bottom-6"
+        // Hidden below lg: down there the mobile action bar carries this ask,
+        // and a bubble floating over it was the third copy of the same button.
+        className="btn btn-primary fixed right-6 bottom-6 z-40 hidden gap-2 px-4 py-3 text-sm shadow-lg shadow-navy/20 lg:inline-flex"
       >
         <span aria-hidden className="text-base leading-none">
           💬

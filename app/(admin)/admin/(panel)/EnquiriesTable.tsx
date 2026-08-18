@@ -12,9 +12,9 @@
  * Only the one thing that genuinely needs the server — changing a lead's
  * status — still goes to it, through the existing Server Action.
  */
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
-import { LEAD_STATUSES, type Lead, type LeadStatus } from "@/lib/leadTypes";
+import { LEAD_SOURCES, LEAD_STATUSES, type Lead, type LeadStatus } from "@/lib/leadTypes";
 import { COUNSELLOR_META_KEY, counsellorFromMeta, counsellors } from "@/lib/content";
 import { setStatus } from "./actions";
 import ClientPager from "./_components/ClientPager";
@@ -28,6 +28,7 @@ const SOURCE_LABEL: Record<string, string> = {
   "compare-unlock": "Comparison unlock",
   "loan-calculator": "Loan calculator",
   counselling: "Counselling",
+  "study-abroad": "Study abroad",
   "college-enquiry": "College enquiry",
   newsletter: "Newsletter",
   contact: "Contact",
@@ -58,7 +59,7 @@ function StatusForm({ lead }: { lead: Lead }) {
       <select
         name="status"
         defaultValue={lead.status}
-        className="rounded-lg border border-line bg-white px-2 py-1.5 text-xs font-medium capitalize"
+        className="field field-sm select font-medium capitalize"
         aria-label={`Status for ${lead.name}`}
       >
         {LEAD_STATUSES.map((s) => (
@@ -91,6 +92,7 @@ function Meta({ lead }: { lead: Lead }) {
 export default function EnquiriesTable({ leads }: { leads: Lead[] }) {
   const [filter, setFilter] = useState<LeadStatus | null>(null);
   const [who, setWho] = useState("");
+  const [src, setSrc] = useState("");
   const [q, setQ] = useState("");
   const [page, setPage] = useState(1);
 
@@ -100,13 +102,32 @@ export default function EnquiriesTable({ leads }: { leads: Lead[] }) {
     return c;
   }, [leads]);
 
+  const byStatus = useMemo(
+    () => (filter ? leads.filter((l) => l.status === filter) : leads),
+    [leads, filter],
+  );
+
+  const matchesWho = useCallback(
+    (l: Lead) => {
+      if (!who) return true;
+      const c = counsellorFromMeta(l.meta);
+      return who === NO_COUNSELLOR ? c === null : c === who;
+    },
+    [who],
+  );
+
+  const matchesSrc = useCallback((l: Lead) => !src || l.source === src, [src]);
+
   /**
    * The roster drives the option order, but anyone who appears in the data and
    * has since left it still gets an option — otherwise their leads would be
    * unreachable through the filter.
+   *
+   * Each dropdown counts against everything *except* itself, so the numbers in
+   * it always describe what picking that option would actually show.
    */
   const whoOptions = useMemo(() => {
-    const inScope = filter ? leads.filter((l) => l.status === filter) : leads;
+    const inScope = byStatus.filter(matchesSrc);
     const tally = new Map<string, number>();
     let none = 0;
     for (const l of inScope) {
@@ -121,17 +142,30 @@ export default function EnquiriesTable({ leads }: { leads: Lead[] }) {
       total: inScope.length,
       named: [...roster, ...extras].map((name) => ({ name, n: tally.get(name) ?? 0 })),
     };
-  }, [leads, filter]);
+  }, [byStatus, matchesSrc]);
+
+  /** Which form the lead came from. Every source stays listed even at zero, so
+   *  the panel doubles as a record of which forms are pulling their weight. */
+  const srcOptions = useMemo(() => {
+    const inScope = byStatus.filter(matchesWho);
+    const tally = new Map<string, number>();
+    for (const l of inScope) tally.set(l.source, (tally.get(l.source) ?? 0) + 1);
+    const known: string[] = [...LEAD_SOURCES];
+    const extras = [...tally.keys()].filter((k) => !known.includes(k)).sort();
+    return {
+      total: inScope.length,
+      named: [...known, ...extras].map((key) => ({
+        key,
+        label: SOURCE_LABEL[key] ?? key,
+        n: tally.get(key) ?? 0,
+      })),
+    };
+  }, [byStatus, matchesWho]);
 
   const matching = useMemo(() => {
     const needle = q.trim().toLowerCase();
-    return leads.filter((l) => {
-      if (filter && l.status !== filter) return false;
-
-      if (who) {
-        const c = counsellorFromMeta(l.meta);
-        if (who === NO_COUNSELLOR ? c !== null : c !== who) return false;
-      }
+    return byStatus.filter((l) => {
+      if (!matchesWho(l) || !matchesSrc(l)) return false;
 
       if (!needle) return true;
       return (
@@ -139,10 +173,11 @@ export default function EnquiriesTable({ leads }: { leads: Lead[] }) {
         l.phone.includes(needle) ||
         (l.email ?? "").toLowerCase().includes(needle) ||
         (l.course ?? "").toLowerCase().includes(needle) ||
+        (SOURCE_LABEL[l.source] ?? l.source).toLowerCase().includes(needle) ||
         (counsellorFromMeta(l.meta) ?? "").toLowerCase().includes(needle)
       );
     });
-  }, [leads, filter, who, q]);
+  }, [byStatus, matchesWho, matchesSrc, q]);
 
   const pageCount = Math.max(1, Math.ceil(matching.length / PER_PAGE));
   // A filter change can leave you past the end of the shorter list.
@@ -203,7 +238,7 @@ export default function EnquiriesTable({ leads }: { leads: Lead[] }) {
             }}
             placeholder="Search name, phone, email, interest or counsellor"
             aria-label="Search enquiries"
-            className="w-full max-w-sm rounded-lg border border-line bg-white px-3 py-2 text-sm"
+            className="field w-full sm:max-w-sm"
           />
 
           <select
@@ -213,7 +248,7 @@ export default function EnquiriesTable({ leads }: { leads: Lead[] }) {
               setPage(1);
             }}
             aria-label="Filter by counsellor"
-            className="rounded-lg border border-line bg-white px-3 py-2 text-sm"
+            className="field select w-full sm:w-60"
           >
             <option value="">All counsellors ({whoOptions.total})</option>
             {whoOptions.named.map((c) => (
@@ -224,15 +259,33 @@ export default function EnquiriesTable({ leads }: { leads: Lead[] }) {
             <option value={NO_COUNSELLOR}>No preference ({whoOptions.none})</option>
           </select>
 
-          {(who || q) && (
+          <select
+            value={src}
+            onChange={(e) => {
+              setSrc(e.target.value);
+              setPage(1);
+            }}
+            aria-label="Filter by form"
+            className="field select w-full sm:w-56"
+          >
+            <option value="">All forms ({srcOptions.total})</option>
+            {srcOptions.named.map((o) => (
+              <option key={o.key} value={o.key}>
+                {o.label} ({o.n})
+              </option>
+            ))}
+          </select>
+
+          {(who || src || q) && (
             <button
               type="button"
               onClick={() => {
                 setWho("");
+                setSrc("");
                 setQ("");
                 setPage(1);
               }}
-              className="rounded-lg border border-line px-2.5 py-2 text-xs font-semibold text-muted hover:bg-paper-2 hover:text-ink"
+              className="inline-flex h-11 shrink-0 items-center rounded-lg border border-line px-3 text-xs font-semibold text-muted hover:bg-paper-2 hover:text-ink sm:h-10"
             >
               Clear
             </button>
@@ -246,13 +299,15 @@ export default function EnquiriesTable({ leads }: { leads: Lead[] }) {
                 ? "Nothing matches that search"
                 : who
                   ? "No enquiries for that counsellor"
-                  : filter
-                    ? `Nothing ${filter}`
-                    : "No enquiries yet"}
+                  : src
+                    ? `No enquiries from ${SOURCE_LABEL[src] ?? src}`
+                    : filter
+                      ? `Nothing ${filter}`
+                      : "No enquiries yet"}
             </p>
             <p className="mx-auto mt-1 max-w-sm text-sm text-muted">
-              {q || filter || who
-                ? "Try another status, counsellor or search."
+              {q || filter || who || src
+                ? "Try another status, form, counsellor or search."
                 : "Leads submitted through any form on the site will appear here, newest first."}
             </p>
           </div>

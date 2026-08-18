@@ -5,9 +5,16 @@
  *
  * On a phone the lead forms sit far down the page, so the two actions that
  * matter — call, or request a callback — need to be reachable at all times.
+ *
+ * This bar IS the phone's enquiry CTA: the header's button and the floating
+ * "Enquire now" bubble both step aside below lg rather than stack three
+ * versions of the same ask into one screen. The callback slot opens the same
+ * dialog the bubble does, over an event so neither component has to own the
+ * other's state.
  */
 import Link from "next/link";
 import { site } from "@/lib/content";
+import { ENQUIRY_OPEN_EVENT } from "./EnquiryWidget";
 
 export function MobileBar() {
   return (
@@ -38,15 +45,17 @@ export function MobileBar() {
             </span>
             Colleges
           </Link>
-          <Link
-            href="/counselling"
+          <button
+            type="button"
+            aria-haspopup="dialog"
+            onClick={() => window.dispatchEvent(new Event(ENQUIRY_OPEN_EVENT))}
             className="m-1.5 flex flex-col items-center justify-center gap-0.5 rounded-lg bg-brand-600 py-1.5 text-[0.68rem] font-bold text-white"
           >
             <span aria-hidden className="text-base leading-none">
               🤝
             </span>
             Free counselling
-          </Link>
+          </button>
         </div>
       </nav>
     </>

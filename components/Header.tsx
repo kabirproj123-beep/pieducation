@@ -63,8 +63,9 @@ export function Header() {
           >
             {site.phone}
           </a>
-          {/* the mobile bottom bar already carries this CTA on small screens */}
-          <Link href="/counselling" className="btn btn-primary hidden px-3.5 py-2 text-sm sm:inline-flex">
+          {/* Below lg the bottom action bar carries the only enquiry CTA — two of
+              them in one viewport is one too many. */}
+          <Link href="/counselling" className="btn btn-primary hidden px-3.5 py-2 text-sm lg:inline-flex">
             Free counselling
           </Link>
           <button

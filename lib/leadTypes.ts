@@ -15,6 +15,7 @@ export const LEAD_SOURCES = [
   "compare-unlock",
   "loan-calculator",
   "counselling",
+  "study-abroad",
   "college-enquiry",
   "newsletter",
   "contact",
