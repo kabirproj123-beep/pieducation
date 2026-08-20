@@ -167,12 +167,13 @@ export function EnquiryWidget() {
               },
               {
                 name: COUNSELLOR_META_KEY,
-                label: "Preferred counsellor (optional)",
+                label: "Counsellor you spoke with*",
                 type: "select",
-                options: [NO_COUNSELLOR_PREFERENCE, ...counsellors],
+                required: true,
+                options: [...counsellors, NO_COUNSELLOR_PREFERENCE],
               },
               { name: "city", label: "Preferred city (optional)" },
-              { name: "message", label: "Anything we should know?" },
+              { name: "message", label: "Anything we should know? (optional)" },
             ]}
           />
         </div>

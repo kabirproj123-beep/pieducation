@@ -81,20 +81,24 @@ export const counsellors = [
   "Prakshik W.",
 ] as const;
 
-export const NO_COUNSELLOR_PREFERENCE = "No preference";
+export const NO_COUNSELLOR_PREFERENCE = "Haven't spoken to anyone yet";
+
+/** What the same option used to be called, so leads saved before the enquiry
+ *  form asked "who did you speak with" still read back as nobody. */
+const LEGACY_NO_COUNSELLOR = "No preference";
 
 /** The `meta` key the enquiry form writes the counsellor choice under. Shared
  *  so the form and the admin filter can't drift apart. */
 export const COUNSELLOR_META_KEY = "counsellor";
 
 /**
- * Reads a lead's counsellor choice back out of its meta. Null covers all three
- * ways of not asking for anyone: older leads from before the field existed, an
- * empty value, and an explicit "No preference".
+ * Reads a lead's counsellor choice back out of its meta. Null covers every way
+ * of naming nobody: older leads from before the field existed, an empty value,
+ * and an explicit "nobody" pick under either its current or its former label.
  */
 export function counsellorFromMeta(meta: Record<string, string> | undefined): string | null {
   const value = meta?.[COUNSELLOR_META_KEY]?.trim();
-  if (!value || value === NO_COUNSELLOR_PREFERENCE) return null;
+  if (!value || value === NO_COUNSELLOR_PREFERENCE || value === LEGACY_NO_COUNSELLOR) return null;
   return value;
 }
 
