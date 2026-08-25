@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
 import { notFound } from "next/navigation";
 import { LeadForm } from "@/components/LeadForm";
 import { CollegeCard } from "@/components/CollegeCard";
 import { Carousel, Slide } from "@/components/Carousel";
 import { Reveal } from "@/components/Motion";
-import { creditLine, getImage } from "@/lib/images";
+import { CollegePhoto } from "@/components/CollegePhoto";
+import { collegePhotos } from "@/lib/images";
 import { formatINR, formatLPA, hasVerifiedFee } from "@/lib/colleges";
 import { getAllColleges, getCollege, relatedColleges } from "@/lib/collegeStore";
 
@@ -45,6 +45,7 @@ export async function generateMetadata(props: {
 
 const SECTIONS = [
   { id: "overview", label: "Overview" },
+  { id: "photos", label: "Photos" },
   { id: "admission", label: "Admission" },
   { id: "courses", label: "Courses & Fees" },
   { id: "placements", label: "Placements" },
@@ -67,7 +68,10 @@ export default async function CollegeDetailPage(props: {
   const c = await getCollege(slug);
   if (!c) notFound();
 
-  const img = getImage(c.slug);
+  const photos = collegePhotos(c);
+  const [cover, ...gallery] = photos;
+  // Nothing to jump to when the cover is the only photo.
+  const sections = gallery.length > 0 ? SECTIONS : SECTIONS.filter((s) => s.id !== "photos");
   const feeVerified = hasVerifiedFee(c);
   const related = await relatedColleges(c);
   const factSheet = [
@@ -84,12 +88,10 @@ export default async function CollegeDetailPage(props: {
     <div className="bg-paper-2">
       {/* ---------------- hero ---------------- */}
       <div className="relative border-b border-line bg-navy text-white">
-        {img && (
+        {cover && (
           <>
-            <Image
-              src={img.src}
-              alt={`${c.short_name || c.name} campus`}
-              fill
+            <CollegePhoto
+              photo={cover}
               priority
               sizes="100vw"
               className="object-cover opacity-25"
@@ -155,8 +157,8 @@ export default async function CollegeDetailPage(props: {
             </div>
           </div>
 
-          {img && (
-            <p className="mt-5 text-[0.68rem] text-on-navy-dim/70">{creditLine(img)}</p>
+          {cover?.credit && (
+            <p className="mt-5 text-[0.68rem] text-on-navy-dim/70">{cover.credit}</p>
           )}
         </div>
       </div>
@@ -164,7 +166,7 @@ export default async function CollegeDetailPage(props: {
       {/* ---------------- section nav ---------------- */}
       <div className="sticky top-16 z-30 border-b border-line bg-white/95 backdrop-blur">
         <div className="container-x flex gap-1 overflow-x-auto py-2">
-          {SECTIONS.map((s) => (
+          {sections.map((s) => (
             <a
               key={s.id}
               href={`#${s.id}`}
@@ -213,6 +215,30 @@ export default async function CollegeDetailPage(props: {
               </div>
             )}
           </section>
+
+          {gallery.length > 0 && (
+            <section id="photos" className="card p-6">
+              <h2 className="display-md font-display">Campus photos</h2>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {gallery.map((photo) => (
+                  <figure key={photo.src} className="overflow-hidden rounded-xl border border-line">
+                    <div className="relative aspect-[4/3] bg-paper-3">
+                      <CollegePhoto
+                        photo={photo}
+                        sizes="(max-width: 640px) 100vw, 45vw"
+                        className="object-cover"
+                      />
+                    </div>
+                    {photo.credit && (
+                      <figcaption className="px-3 py-2 text-[0.7rem] text-faint">
+                        {photo.credit}
+                      </figcaption>
+                    )}
+                  </figure>
+                ))}
+              </div>
+            </section>
+          )}
 
           {c.why_choose && (
             <section className="card p-6">
