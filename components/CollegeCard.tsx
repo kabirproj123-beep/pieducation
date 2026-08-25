@@ -1,7 +1,7 @@
 import Link from "next/link";
-import Image from "next/image";
+import { CollegePhoto } from "@/components/CollegePhoto";
 import { formatINR, formatLPA, hasVerifiedFee, type College } from "@/lib/colleges";
-import { getImage } from "@/lib/images";
+import { collegeCover } from "@/lib/images";
 
 /**
  * Colleges without a confidently-matched photo get a deterministic gradient
@@ -34,18 +34,16 @@ function initials(name: string) {
 }
 
 export function CollegeCard({ college: c }: { college: College }) {
-  const img = getImage(c.slug);
+  const cover = collegeCover(c);
   const verified = hasVerifiedFee(c);
 
   return (
     <Link href={`/colleges/${c.slug}`} className="card card-hover flex h-full flex-col overflow-hidden">
       <div className="relative h-28 shrink-0 sm:h-32">
-        {img ? (
+        {cover ? (
           <>
-            <Image
-              src={img.src}
-              alt={`${c.short_name || c.name} campus`}
-              fill
+            <CollegePhoto
+              photo={cover}
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
               className="object-cover"
             />

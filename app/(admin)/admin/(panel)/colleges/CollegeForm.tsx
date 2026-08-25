@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import Link from "next/link";
 import { STREAMS, slugify, type College, type Course, type Faq, type SelectionStep } from "@/lib/colleges";
+import { CollegeImagesField } from "./CollegeImagesField";
 import { saveCollegeAction } from "./actions";
 
 /* ------------------------------ primitives ------------------------------ */
@@ -276,6 +277,12 @@ export default function CollegeForm({
           <input {...text("tagline")} placeholder="Maharashtra's oldest engineering college" />
         </Field>
       </Section>
+
+      <CollegeImagesField
+        slug={c.slug}
+        images={c.images}
+        onChange={(images) => set({ images })}
+      />
 
       <Section
         title="Ranking & fees"
