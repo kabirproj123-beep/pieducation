@@ -21,6 +21,23 @@ export async function generateStaticParams() {
  */
 export const dynamicParams = true;
 
+/**
+ * How long a rendered college page is served before Next regenerates it.
+ *
+ * This is the other half of the read bill, and it is easy to miss. Next
+ * prefetches every <Link> that enters the viewport, so opening the site fires
+ * RSC prefetches for dozens of college pages at once — 85 of them are linked
+ * from the home page alone. Any of those whose cached render has gone stale is
+ * re-rendered on the server, and each re-render reads this college.
+ *
+ * On the default profile that staleness window is five minutes, so a browse
+ * could regenerate the same pages a dozen times an hour. An hour matches the
+ * data cache behind it, so a prefetch storm regenerates a page once rather
+ * than repeatedly. Admin saves still call updateTag(COLLEGES_TAG), which drops
+ * both the data and this page, so an edit is visible immediately.
+ */
+export const revalidate = 3600;
+
 /** `params` is a Promise in Next 16. */
 export async function generateMetadata(props: {
   params: Promise<{ slug: string }>;
