@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CollegeCard } from "@/components/CollegeCard";
+import { CollegeGrid } from "@/components/CollegeGrid";
 import { citiesIn, selectColleges, STREAMS, type Sort } from "@/lib/colleges";
 import { getAllColleges } from "@/lib/collegeStore";
 
@@ -158,11 +158,9 @@ export default async function CollegesPage(props: {
             </Link>
           </div>
         ) : (
-          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {results.map((c) => (
-              <CollegeCard key={c.slug} college={c} />
-            ))}
-          </div>
+          // `key` on the filter state remounts the grid when the result set
+          // changes, so a new filter starts at page one.
+          <CollegeGrid key={`${stream}|${city}|${ownership}|${q}|${sort}`} colleges={results} />
         )}
       </div>
     </div>

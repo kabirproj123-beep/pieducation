@@ -37,8 +37,25 @@ import {
 export const COLLECTION = "colleges";
 export const COLLEGES_TAG = "colleges";
 
-/** How long a cached read survives without an explicit invalidation. */
-const TTL_SECONDS = 300;
+/**
+ * How long a cached read survives without an explicit invalidation.
+ *
+ * This number is a quota decision, not a freshness one. A refresh reads the
+ * whole collection, so it costs one Firestore document read per college — 192
+ * at the time of writing. At the old five-minute TTL that was
+ * `288 refreshes × 192 = 55,296` reads a day with nobody visiting the site,
+ * against a free-tier allowance of 50,000. The project ran itself out of quota
+ * every day, and once it did, every read failed with RESOURCE_EXHAUSTED: the
+ * public site fell back to bundled data (losing the admin-uploaded Cloudinary
+ * photos, which only exist on the Firestore records) and the admin login could
+ * not count accounts, so it showed "Sign-in is unavailable".
+ *
+ * An hour brings that to 24 × 192 = 4,608 a day. Freshness does not suffer,
+ * because every mutation calls `updateTag(COLLEGES_TAG)` and the next read
+ * repopulates immediately — the TTL only governs edits made outside the admin
+ * panel, straight in the Firebase console.
+ */
+const TTL_SECONDS = 3600;
 
 export type Source = "firestore" | "bundled";
 export type Result<T = void> = { ok: true; value: T } | { ok: false; error: string };
@@ -51,16 +68,13 @@ async function read(): Promise<{ colleges: College[]; source: Source }> {
   const db = getAdminDb();
   if (!db) return { colleges: bundled, source: "bundled" };
 
-  try {
-    const snap = await db.collection(COLLECTION).get();
-    // An empty collection means "not seeded", not "no colleges" — showing the
-    // bundled list beats showing an empty site.
-    if (snap.empty) return { colleges: bundled, source: "bundled" };
-    return { colleges: snap.docs.map((d) => normaliseCollege(d.data())), source: "firestore" };
-  } catch (err) {
-    console.error("Firestore college read failed; using bundled data:", err);
-    return { colleges: bundled, source: "bundled" };
-  }
+  // Deliberately unguarded: a read that fails has to propagate so the cache
+  // below stores nothing. See `cachedRead`.
+  const snap = await db.collection(COLLECTION).get();
+  // An empty collection means "not seeded", not "no colleges" — showing the
+  // bundled list beats showing an empty site.
+  if (snap.empty) return { colleges: bundled, source: "bundled" };
+  return { colleges: snap.docs.map((d) => normaliseCollege(d.data())), source: "firestore" };
 }
 
 const cachedRead = unstable_cache(read, ["colleges:all"], {
@@ -68,17 +82,75 @@ const cachedRead = unstable_cache(read, ["colleges:all"], {
   revalidate: TTL_SECONDS,
 });
 
+/**
+ * The cached read, with the Firestore outage fallback wrapped *around* the
+ * cache rather than inside it.
+ *
+ * The distinction matters. If `read()` swallowed the error and returned the
+ * bundled list, that fallback would be cached for the full TTL — so a blip, or
+ * a daily quota reset, would leave the site showing bundled data (no uploaded
+ * photos, no admin edits) for an hour after Firestore was healthy again.
+ * Letting the error out means nothing is stored and the very next request
+ * tries Firestore afresh, so recovery is immediate.
+ */
+async function readOrFallBack(): Promise<{ colleges: College[]; source: Source }> {
+  try {
+    return await cachedRead();
+  } catch (err) {
+    console.error("Firestore college read failed; using bundled data:", err);
+    return { colleges: bundled, source: "bundled" };
+  }
+}
+
 export async function getAllColleges(): Promise<College[]> {
-  return (await cachedRead()).colleges;
+  return (await readOrFallBack()).colleges;
 }
 
 /** Which store the current list came from — surfaced in the admin panel. */
 export async function collegesSource(): Promise<Source> {
-  return (await cachedRead()).source;
+  return (await readOrFallBack()).source;
 }
 
+/**
+ * One college, read as one document.
+ *
+ * This used to be `(await getAllColleges()).find(...)`, which is a whole-
+ * collection read — 192 billed document reads to return a single record. That
+ * is what made editing expensive: opening a college in the admin cost 192
+ * reads, saving it invalidated the collection cache, and the redirect back to
+ * the list spent another 192. Editing the catalogue once, to add photos, ran
+ * to roughly 384 reads per college and exhausted a day's free quota well
+ * before the last one.
+ *
+ * Documents are keyed by slug, so the lookup is a direct `doc(slug).get()`:
+ * one read, cached under its own key so a miss on one college does not drag
+ * the other 191 along with it. The shared COLLEGES_TAG still clears it on
+ * every save, so the admin keeps read-your-own-writes.
+ */
 export async function getCollege(slug: string): Promise<College | undefined> {
-  return (await getAllColleges()).find((c) => c.slug === slug);
+  const id = slugify(slug);
+  if (!id) return undefined;
+
+  const db = getAdminDb();
+  if (!db) return bundled.find((c) => c.slug === id);
+
+  try {
+    const doc = await unstable_cache(
+      async () => {
+        const snap = await db.collection(COLLECTION).doc(id).get();
+        return snap.exists ? (snap.data() as Record<string, unknown>) : null;
+      },
+      ["college", id],
+      { tags: [COLLEGES_TAG], revalidate: TTL_SECONDS },
+    )();
+
+    // A slug Firestore does not know may still be in the bundled seed — a
+    // college the catalogue has but nobody has saved through the admin yet.
+    return doc ? normaliseCollege(doc) : bundled.find((c) => c.slug === id);
+  } catch (err) {
+    console.error(`Firestore read failed for college "${id}"; using bundled data:`, err);
+    return bundled.find((c) => c.slug === id);
+  }
 }
 
 export async function getCities(): Promise<string[]> {

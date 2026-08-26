@@ -48,8 +48,16 @@ function strip(admin: Admin): AdminSummary {
   return { username, name, createdAt, lastLoginAt };
 }
 
+/**
+ * A ceiling on the team list. Firestore bills per document returned, and an
+ * unbounded `.get()` on a collection is how a page that looks cheap today
+ * becomes expensive later. This is a counselling team, not a user base — if it
+ * ever passes this, the page needs paging, not a bigger number.
+ */
+const MAX_ADMINS = 100;
+
 export async function listAdmins(): Promise<AdminSummary[]> {
-  const snap = await admins().get();
+  const snap = await admins().limit(MAX_ADMINS).get();
   return snap.docs
     .map((d) => d.data() as Admin)
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
@@ -67,7 +75,7 @@ export async function listAdmins(): Promise<AdminSummary[]> {
 export async function listAdminCredentials(): Promise<
   (AdminSummary & { password: string | null })[]
 > {
-  const snap = await admins().get();
+  const snap = await admins().limit(MAX_ADMINS).get();
   return snap.docs
     .map((d) => d.data() as Admin)
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
