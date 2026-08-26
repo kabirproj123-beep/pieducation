@@ -270,6 +270,75 @@ export default async function CounsellingPage() {
         </div>
       </section>
 
+      {/* The booking form, kept high on the page rather than parked at the
+          bottom where it reads as part of the footer. Every service CTA
+          below anchors back up to it. */}
+      <section id="book" className="scroll-mt-24 border-b border-line bg-paper">
+        <div className="container-x grid items-start gap-10 py-14 lg:grid-cols-[1fr_24rem]">
+          <div className="max-w-xl">
+            <p className="eyebrow text-brand">Free consultation</p>
+            <h2 className="display-md mt-2 font-display font-extrabold text-ink">
+              Book your free counselling session
+            </h2>
+            <p className="mt-3 text-muted">
+              Get personalised guidance for your specific situation. Tell us your exam and score —
+              a counsellor calls you back within 24 hours.
+            </p>
+
+            <ul className="mt-6 space-y-2 text-sm text-muted">
+              {[
+                "One-to-one, not a group webinar",
+                "Parents welcome on the call",
+                "No obligation, no college is paying us to recommend it",
+              ].map((p) => (
+                <li key={p} className="flex items-start gap-2">
+                  <Check />
+                  {p}
+                </li>
+              ))}
+            </ul>
+
+            <p className="mt-6 text-sm text-muted">
+              Prefer to talk now?{" "}
+              <a href={`tel:${site.whatsapp}`} className="font-semibold text-ink hover:text-brand-700">
+                {site.phone}
+              </a>
+            </p>
+          </div>
+
+          {/* Raised so the form reads as the thing to do on this page, not a
+              box beside the copy. */}
+          <div className="card-raised p-5">
+            <h3 className="font-display text-lg font-bold">Book free counselling</h3>
+            <p className="mt-1 mb-4 text-sm text-muted">
+              A counsellor will call within 24 hours.
+            </p>
+            <LeadForm
+              source="counselling"
+              compact
+              submitLabel="Book my free session"
+              extraFields={[
+                {
+                  name: "exam",
+                  label: "Which exam?*",
+                  type: "select",
+                  required: true,
+                  options: [
+                    "MHT-CET",
+                    "JEE Main / Advanced",
+                    "NEET UG",
+                    "CAT / MAH MBA CET",
+                    "CLAT / MH CET Law",
+                    "Not decided yet",
+                  ],
+                },
+                { name: "score", label: "Score / rank / percentile (if known)" },
+              ]}
+            />
+          </div>
+        </div>
+      </section>
+
       {/* The three services, alternating photo side. */}
       {SERVICES.map((s, i) => (
         <section
@@ -380,67 +449,23 @@ export default async function CounsellingPage() {
         </div>
       </section>
 
-      {/* Closing CTA — the form the whole page points at. */}
-      <section id="book" className="scroll-mt-24 bg-navy text-white">
-        <div className="container-x grid gap-10 py-16 lg:grid-cols-[1fr_24rem]">
+      {/* Closing CTA. Buttons only — the form itself is up at #book, so the
+          page does not end on a second one sitting against the footer. */}
+      <section className="bg-navy text-white">
+        <div className="container-x flex flex-col items-start gap-6 py-14 sm:flex-row sm:items-center sm:justify-between">
           <div className="max-w-xl">
-            <p className="eyebrow text-brand">Free consultation</p>
-            <h2 className="display-md mt-2 font-display font-extrabold">
+            <h2 className="display-md font-display font-extrabold">
               Ready to explore your options?
             </h2>
-            <p className="mt-3 text-on-navy-dim">
+            <p className="mt-2 text-on-navy-dim">
               Book a free consultation and get personalised guidance for your specific situation.
-              Tell us your exam and score — a counsellor calls you back within 24 hours.
-            </p>
-
-            <ul className="mt-6 space-y-2 text-sm text-on-navy-dim">
-              {[
-                "One-to-one, not a group webinar",
-                "Parents welcome on the call",
-                "No obligation, no college is paying us to recommend it",
-              ].map((p) => (
-                <li key={p} className="flex items-start gap-2">
-                  <Check />
-                  {p}
-                </li>
-              ))}
-            </ul>
-
-            <p className="mt-6 text-sm text-on-navy-dim">
-              Prefer to talk now?{" "}
-              <a href={`tel:${site.whatsapp}`} className="font-semibold text-white hover:underline">
-                {site.phone}
-              </a>
             </p>
           </div>
 
-          <div className="card p-5 text-ink">
-            <h3 className="font-display text-lg font-bold">Book free counselling</h3>
-            <p className="mt-1 mb-4 text-sm text-muted">
-              A counsellor will call within 24 hours.
-            </p>
-            <LeadForm
-              source="counselling"
-              compact
-              submitLabel="Book my free session"
-              extraFields={[
-                {
-                  name: "exam",
-                  label: "Which exam?*",
-                  type: "select",
-                  required: true,
-                  options: [
-                    "MHT-CET",
-                    "JEE Main / Advanced",
-                    "NEET UG",
-                    "CAT / MAH MBA CET",
-                    "CLAT / MH CET Law",
-                    "Not decided yet",
-                  ],
-                },
-                { name: "score", label: "Score / rank / percentile (if known)" },
-              ]}
-            />
+          <div className="flex flex-wrap gap-3">
+            <a href="#book" className="btn btn-primary px-5 py-2.5 text-sm">
+              Book free consultation
+            </a>
           </div>
         </div>
       </section>

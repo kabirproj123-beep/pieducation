@@ -59,7 +59,7 @@ export function Footer() {
                   {site.email}
                 </a>
               </li>
-              <li>{site.address}</li>
+              {/* No address line — the map below carries it, pin and all. */}
             </ul>
 
             <SocialLinks className="mt-6" />
