@@ -17,7 +17,7 @@ export default function ContactPage() {
           <h1 className="display-lg mt-2 font-display">Let&apos;s find your best next step</h1>
           <p className="lede mt-3 max-w-2xl">
             Tell us where you are. We&apos;ll come back within one working day with honest next
-            steps — no cost, no sales script.
+            steps. No cost, no sales script.
           </p>
         </div>
       </div>

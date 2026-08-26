@@ -1,11 +1,7 @@
 "use client";
 
-/**
- * Education-loan EMI estimator. Calculates freely; the "get low-interest help"
- * form beside it is the lead capture.
- */
+/** Education-loan EMI estimator. */
 import { useMemo, useState } from "react";
-import { LeadForm } from "./LeadForm";
 
 const TENURES = [3, 5, 7, 10];
 
@@ -32,7 +28,7 @@ export function LoanCalculator() {
   const field = "w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm font-semibold";
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
+    <div>
       <div className="card p-6">
         <div className="flex items-baseline justify-between">
           <h3 className="font-display text-lg font-bold">EMI estimator</h3>
@@ -42,7 +38,7 @@ export function LoanCalculator() {
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor="loan-amt" className="mb-1 block text-xs font-semibold text-muted">
-              Loan amount — {inr(amount)}
+              Loan amount: {inr(amount)}
             </label>
             <input
               id="loan-amt"
@@ -135,38 +131,6 @@ export function LoanCalculator() {
         </p>
       </div>
 
-      <div className="card h-fit border-brand/40 p-5">
-        <p className="eyebrow">Loan assistance</p>
-        <h3 className="mt-1 font-display text-lg font-bold">Want a low-interest loan?</h3>
-        <p className="mt-1 mb-4 text-sm text-muted">
-          We connect you with verified partner banks and fast-track the paperwork.
-        </p>
-        <LeadForm
-          source="loan-calculator"
-          compact
-          submitLabel="Get loan assistance"
-          note="We share your details only with verified partner banks."
-          hiddenMeta={{
-            loan_amount: String(amount),
-            tenure_years: String(years),
-            rate: String(rate),
-          }}
-          extraFields={[
-            {
-              name: "family_income",
-              label: "Family income range*",
-              type: "select",
-              required: true,
-              options: [
-                "Under ₹3 Lakhs",
-                "₹3 Lakhs – ₹6 Lakhs",
-                "₹6 Lakhs – ₹10 Lakhs",
-                "Above ₹10 Lakhs",
-              ],
-            },
-          ]}
-        />
-      </div>
     </div>
   );
 }

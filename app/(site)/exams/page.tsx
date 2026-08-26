@@ -3,7 +3,7 @@ import Link from "next/link";
 import { EXAMS } from "@/lib/catalog";
 
 export const metadata: Metadata = {
-  title: "Entrance Exams — JEE, NEET, CAT, CLAT & MHT-CET",
+  title: "Entrance Exams | JEE, NEET, CAT, CLAT & MHT-CET",
   description:
     "The entrance exams that matter for Maharashtra admissions: who conducts them, who is eligible, and which colleges accept them.",
 };
@@ -20,7 +20,7 @@ export default function ExamsPage() {
           <h1 className="display-lg mt-2 font-display">Exams that open doors in Maharashtra</h1>
           <p className="lede mt-3 max-w-2xl">
             Most Maharashtra seats are filled through one of these. State CETs carry a domicile
-            advantage that national exams do not — worth planning for early.
+            advantage that national exams do not, so it is worth planning for early.
           </p>
         </div>
       </div>
@@ -85,7 +85,7 @@ export default function ExamsPage() {
 
         <p className="text-xs text-faint">
           Exam patterns and schedules change every cycle. We deliberately don&apos;t publish dates
-          or cutoffs here — ask a counsellor for the current cycle rather than trusting a page that
+          or cutoffs here. Ask a counsellor for the current cycle rather than trusting a page that
           may be out of date.
         </p>
       </div>

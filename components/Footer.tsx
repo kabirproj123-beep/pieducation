@@ -4,6 +4,7 @@ import Link from "next/link";
 import { site } from "@/lib/content";
 import { COURSES, EXAMS } from "@/lib/catalog";
 import { PRIMARY_STREAMS } from "@/lib/colleges";
+import { SocialLinks } from "./SocialLinks";
 
 const COLUMNS = [
   {
@@ -60,6 +61,8 @@ export function Footer() {
               </li>
               <li>{site.address}</li>
             </ul>
+
+            <SocialLinks className="mt-6" />
           </div>
 
           {COLUMNS.map((col) => (
@@ -85,7 +88,7 @@ export function Footer() {
             © {year} {site.name}. All rights reserved.
           </p>
           <p>
-            College data compiled from public disclosures and ranking reports — verify before you
+            College data compiled from public disclosures and ranking reports. Verify before you
             decide.
           </p>
         </div>

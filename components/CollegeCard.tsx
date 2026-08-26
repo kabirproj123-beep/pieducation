@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { CollegePhoto } from "@/components/CollegePhoto";
 import { formatINR, formatLPA, hasVerifiedFee, type College } from "@/lib/colleges";
-import { collegeCover } from "@/lib/images";
+import { getImage } from "@/lib/images";
 import { gradientFor, initials } from "@/lib/avatar";
 
 /**
@@ -35,9 +35,11 @@ export function CollegeCard({ college: c }: { college: College }) {
       />
 
       <div className="relative h-32 shrink-0 overflow-hidden sm:h-36">
-        {cover ? (
-          <CollegePhoto
-            photo={cover}
+        {img ? (
+          <Image
+            src={img.src}
+            alt={`${name} campus`}
+            fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
             className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.06]"
           />

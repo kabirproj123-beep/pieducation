@@ -136,7 +136,7 @@ export async function saveCollege(
     return { ok: false, error: "A college needs a name." };
   }
   if (!college.slug) {
-    return { ok: false, error: "Couldn't build a URL slug from that name — add one manually." };
+    return { ok: false, error: "Couldn't build a URL slug from that name. Add one manually." };
   }
 
   const previous = opts.previousSlug ? slugify(opts.previousSlug) : null;

@@ -11,7 +11,7 @@ import {
 } from "@/lib/colleges";
 
 export const metadata: Metadata = {
-  title: "Maharashtra College Rankings — Engineering, Medical, MBA & Law",
+  title: "Maharashtra College Rankings | Engineering, Medical, MBA & Law",
   description:
     "Top-ranked colleges in Maharashtra by stream, with NIRF rank, total fees and average placement package side by side.",
 };
@@ -112,7 +112,7 @@ export default async function RankingsPage(props: {
           Fees shown are total course fees cross-checked against a second source, with the
           programme named on each college page. Where we couldn&apos;t verify a figure we show
           &ldquo;on request&rdquo; rather than an unreliable number. Placement figures are
-          self-reported by institutions — confirm both with the college before deciding.
+          self-reported by institutions. Confirm both with the college before deciding.
         </p>
       </div>
     </div>

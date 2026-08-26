@@ -4,7 +4,7 @@ import { COURSES } from "@/lib/catalog";
 import { countByStream } from "@/lib/collegeStore";
 
 export const metadata: Metadata = {
-  title: "Courses — B.Tech, MBA, MBBS, Law & Pharmacy in Maharashtra",
+  title: "Courses | B.Tech, MBA, MBBS, Law & Pharmacy in Maharashtra",
   description:
     "Course directory for Maharashtra: eligibility, duration, entrance exams and the colleges that offer each programme.",
 };
@@ -19,7 +19,7 @@ export default async function CoursesPage() {
           <p className="eyebrow">Courses</p>
           <h1 className="display-lg mt-2 font-display">What do you want to study?</h1>
           <p className="lede mt-3 max-w-2xl">
-            Eligibility, duration and the entrance exams that matter — plus every Maharashtra
+            Eligibility, duration and the entrance exams that matter, plus every Maharashtra
             college offering the programme.
           </p>
         </div>

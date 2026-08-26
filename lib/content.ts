@@ -57,14 +57,35 @@ export const site = {
   founded: FOUNDED,
   yearsGuiding: `${new Date().getFullYear() - FOUNDED}+`,
   description:
-    "Compare every major college in Maharashtra — Engineering, Medical, Management and Law. Real fees, placements and rankings, plus free counselling from admission experts.",
+    "Compare every major college in Maharashtra across Engineering, Medical, Management and Law. Real fees, placements and rankings, plus free counselling from admission experts.",
   location: "Wakad, Pune, Maharashtra",
   phone: "+91 99170 70979",
   whatsapp: "+919917070979",
   email: "support@pieducations.in",
-  instagram: "https://instagram.com",
   address:
     "Shop No 428, PI Educations Consultancy, The Address Commercia, Hinjawadi Rd, Shankar Kalat Nagar, Wakad, Pune, Pimpri-Chinchwad, Maharashtra 411057",
+
+  /**
+   * Social profiles, rendered as the icon row in the footer.
+   *
+   * ⚠ THESE ARE PLACEHOLDERS. Every value below points at the platform's own
+   * homepage, NOT at a PIeducations account — deliberately, because guessing a
+   * handle risks sending your visitors to a stranger's profile. Replace each
+   * with the real profile URL before launch.
+   *
+   * Set any entry to "" and its icon disappears from the footer, so there is no
+   * need to keep a platform you don't use.
+   *
+   * WhatsApp is the exception: it is derived from the real `whatsapp` number
+   * above, so that one already works.
+   */
+  social: {
+    instagram: "https://instagram.com",
+    facebook: "https://facebook.com",
+    youtube: "https://youtube.com",
+    linkedin: "https://linkedin.com",
+    x: "",
+  },
 };
 
 /**
@@ -153,7 +174,7 @@ export const hero = {
   eyebrow: "Counselling · Test prep · Study abroad · Careers",
   titleLead: "Guidance that goes",
   titleAccent: "the whole way.",
-  body: "From choosing the right stream to walking into the right career, one team stays with you at every step — with advice that's honest and prep that actually moves the needle.",
+  body: "From choosing the right stream to walking into the right career, one team stays with you at every step, with advice that's honest and prep that actually moves the needle.",
   primaryCta: { label: "Book a free session", href: "/contact" },
   secondaryCta: { label: "Explore services", href: "/services" },
 };
@@ -183,28 +204,28 @@ export const services: Service[] = [
     id: "counselling",
     title: "Admissions counselling",
     summary:
-      "Honest, one-on-one guidance to choose the right stream, course, and shortlist — for colleges in India and abroad, matched to your profile.",
+      "Honest, one-on-one guidance to choose the right stream, course, and shortlist for colleges in India and abroad, matched to your profile.",
     points: ["Profile evaluation", "Course & campus fit", "Personalised shortlist"],
   },
   {
     id: "test-prep",
     title: "Test preparation",
     summary:
-      "Focused coaching for SAT, GRE, GMAT, IELTS and competitive exams — small batches, diagnostic tests, and weekly full-length mocks.",
+      "Focused coaching for SAT, GRE, GMAT, IELTS and competitive exams, with small batches, diagnostic tests, and weekly full-length mocks.",
     points: ["SAT · GRE · GMAT", "IELTS & TOEFL", "Full-length mocks"],
   },
   {
     id: "study-abroad",
     title: "Study abroad",
     summary:
-      "End-to-end support for universities across eleven countries — applications, SOPs, scholarships, and visas handled start to finish.",
+      "End-to-end support for universities across eleven countries. Applications, SOPs, scholarships, and visas handled start to finish.",
     points: ["University applications", "Scholarship strategy", "Visa & documentation"],
   },
   {
     id: "careers",
     title: "Career mentorship",
     summary:
-      "Beyond the admit — profile building, internships, and a career map drawn with mentors who've walked the path themselves.",
+      "Beyond the admit: profile building, internships, and a career map drawn with mentors who've walked the path themselves.",
     points: ["Profile building", "Internship pathways", "Career mapping"],
   },
 ];
@@ -213,12 +234,12 @@ export const steps: Step[] = [
   {
     id: "01",
     title: "Discovery call",
-    body: "A free, honest conversation about your goals, budget, and timeline — no scripts, no pressure.",
+    body: "A free, honest conversation about your goals, budget, and timeline. No scripts, no pressure.",
   },
   {
     id: "02",
     title: "Plan & shortlist",
-    body: "We map your strengths against real outcomes and build a plan — courses, exams, and a reach-to-safe shortlist.",
+    body: "We map your strengths against real outcomes and build a plan covering courses, exams, and a reach-to-safe shortlist.",
   },
   {
     id: "03",
@@ -245,7 +266,7 @@ export const testimonials: Testimonial[] = [
   {
     id: "t1",
     quote:
-      "I came in fixated on one plan. PIeducations pushed back with data, and I ended up somewhere better than my dream school — with a scholarship I didn't know I qualified for.",
+      "I came in fixated on one plan. PIeducations pushed back with data, and I ended up somewhere better than my dream school, with a scholarship I didn't know I qualified for.",
     name: "Ananya R.",
     detail: "MS Computer Science · Purdue",
     avatar: U("1494790108377-be9c29b29330"),
@@ -261,7 +282,7 @@ export const testimonials: Testimonial[] = [
   {
     id: "t3",
     quote:
-      "They treated my application like it mattered. Three rewrites later it actually sounded like me — and three universities said yes.",
+      "They treated my application like it mattered. Three rewrites later it actually sounded like me, and three universities said yes.",
     name: "Fatima S.",
     detail: "MSc Finance · Trinity College Dublin",
     avatar: U("1438761681033-6461ffad8d80"),
@@ -279,7 +300,7 @@ export const faqs: FaqItem[] = [
   },
   {
     q: "When should I start the process?",
-    a: "The earlier the better, so nothing is rushed — but we regularly help students on tight timelines too. Book a call and we'll tell you honestly where you stand.",
+    a: "The earlier the better, so nothing is rushed, but we regularly help students on tight timelines too. Book a call and we'll tell you honestly where you stand.",
   },
   {
     q: "Do you help with scholarships and visas?",

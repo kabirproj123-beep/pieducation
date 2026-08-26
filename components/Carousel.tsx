@@ -76,7 +76,9 @@ export function Carousel({
             disabled={atStart}
             aria-label="Scroll left"
             className="absolute -left-3 top-1/2 hidden size-9 -translate-y-1/2 place-items-center rounded-full
-                       border border-line bg-white shadow-md transition-opacity hover:bg-paper-2
+                       border border-line bg-white/95 text-lg text-ink shadow-lg shadow-navy/15 backdrop-blur
+                       transition-all duration-300 hover:border-brand hover:bg-white hover:text-brand-700
+                       hover:shadow-xl hover:shadow-navy/20
                        disabled:pointer-events-none disabled:opacity-0 md:grid"
           >
             <span aria-hidden>‹</span>
@@ -87,7 +89,9 @@ export function Carousel({
             disabled={atEnd}
             aria-label="Scroll right"
             className="absolute -right-3 top-1/2 hidden size-9 -translate-y-1/2 place-items-center rounded-full
-                       border border-line bg-white shadow-md transition-opacity hover:bg-paper-2
+                       border border-line bg-white/95 text-lg text-ink shadow-lg shadow-navy/15 backdrop-blur
+                       transition-all duration-300 hover:border-brand hover:bg-white hover:text-brand-700
+                       hover:shadow-xl hover:shadow-navy/20
                        disabled:pointer-events-none disabled:opacity-0 md:grid"
           >
             <span aria-hidden>›</span>

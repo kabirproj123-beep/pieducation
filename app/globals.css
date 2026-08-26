@@ -150,6 +150,37 @@ h1, h2, h3, h4, h5, .font-display {
     box-shadow: 0 20px 40px -24px rgb(15 23 42 / 0.28);
   }
 
+  /* ---------------------------------------------------------------------------
+     Raised card — the college rails and grids.
+
+     Distinct from `.card`, which stays flat: that one is used 40-odd times
+     across the compare tool, the calculator and the whole admin panel, where a
+     drop shadow on every panel would turn into noise.
+
+     Two shadow layers rather than one. A tight, near-opaque contact shadow sits
+     the card on the page; a broad, soft ambient one gives it height. A single
+     blurred shadow trying to do both jobs just reads as grey haze.
+  --------------------------------------------------------------------------- */
+  .card-raised {
+    border: 1px solid var(--color-line);
+    background: #fff;
+    border-radius: 1rem;
+    box-shadow:
+      0 1px 2px rgb(15 23 42 / 0.05),
+      0 10px 26px -14px rgb(15 23 42 / 0.22);
+    transition:
+      transform 0.3s var(--ease-out-soft),
+      box-shadow 0.3s var(--ease-out-soft),
+      border-color 0.3s var(--ease-out-soft);
+  }
+  .card-raised:hover {
+    transform: translateY(-4px);
+    border-color: color-mix(in srgb, var(--color-brand) 50%, transparent);
+    box-shadow:
+      0 2px 6px rgb(15 23 42 / 0.07),
+      0 28px 52px -20px rgb(15 23 42 / 0.34);
+  }
+
   /* Chip / badge */
   .chip {
     display: inline-flex;
@@ -268,6 +299,81 @@ h1, h2, h3, h4, h5, .font-display {
 
 ::selection { background: var(--color-brand); color: #06263a; }
 
+/* ---------------------------------------------------------------------------
+   Hero atmosphere
+
+   Three slow-drifting colour fields sit behind the hero, heavily blurred, plus
+   a masked dot grid for texture. Every keyframe starts and ends on the identity
+   transform on purpose: the prefers-reduced-motion block below collapses the
+   duration to ~0, which snaps each element to its 100% frame — so the reduced
+   state has to be the resting state, or the layout jumps for those users.
+
+   `translate`/`scale` are used as standalone properties rather than a combined
+   `transform` so JS-driven transforms on the same elements never collide.
+--------------------------------------------------------------------------- */
+@keyframes aurora-a {
+  0%, 100% { translate: 0 0; scale: 1; }
+  33%      { translate: 7% -6%; scale: 1.15; }
+  66%      { translate: -4% 5%; scale: 0.94; }
+}
+@keyframes aurora-b {
+  0%, 100% { translate: 0 0; scale: 1; }
+  40%      { translate: -8% 7%; scale: 1.1; }
+  70%      { translate: 5% 4%; scale: 0.96; }
+}
+@keyframes aurora-c {
+  0%, 100% { translate: 0 0; scale: 1; }
+  50%      { translate: 6% 8%; scale: 1.18; }
+}
+.aurora {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(72px);
+  will-change: translate, scale;
+}
+.aurora-a { animation: aurora-a 19s var(--ease-out-soft) infinite; }
+.aurora-b { animation: aurora-b 23s var(--ease-out-soft) infinite; }
+.aurora-c { animation: aurora-c 27s var(--ease-out-soft) infinite; }
+
+/* Dot texture, faded out towards the edges so it never meets a border. */
+.hero-dots {
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    color-mix(in srgb, var(--color-navy) 14%, transparent) 1px,
+    transparent 0
+  );
+  background-size: 24px 24px;
+  -webkit-mask-image: radial-gradient(ellipse 75% 65% at 50% 35%, #000 30%, transparent 100%);
+  mask-image: radial-gradient(ellipse 75% 65% at 50% 35%, #000 30%, transparent 100%);
+}
+
+/* Idle bob for the hero photo cards. Duration/delay are set per card inline so
+   the three never travel in sync. */
+@keyframes hero-float {
+  0%, 100% { translate: 0 0; }
+  50%      { translate: 0 -16px; }
+}
+.hero-float {
+  animation: hero-float 7s var(--ease-out-soft) infinite;
+  will-change: translate;
+}
+
+/* Frosted panel for the figures that sit on top of the photos. */
+.glass {
+  background: color-mix(in srgb, #fff 76%, transparent);
+  backdrop-filter: blur(14px) saturate(1.5);
+  -webkit-backdrop-filter: blur(14px) saturate(1.5);
+  border: 1px solid color-mix(in srgb, #fff 65%, transparent);
+  box-shadow: 0 18px 40px -18px rgb(15 23 42 / 0.35);
+}
+
+/* Live-status dot on the hero pill. */
+@keyframes ping-soft {
+  0%   { opacity: 0.7; scale: 1; }
+  70%, 100% { opacity: 0; scale: 2.4; }
+}
+.ping-soft { animation: ping-soft 2.4s var(--ease-out-soft) infinite; }
+
 /* Marquee */
 @keyframes marquee {
   from { transform: translateX(0); }
@@ -277,6 +383,48 @@ h1, h2, h3, h4, h5, .font-display {
 .marquee-mask {
   -webkit-mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
   mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+}
+
+/* Second row of the trending rail, travelling the other way. Starting at -50%
+   and ending at 0 is the same loop run backwards, so both rows can share one
+   duplicated-list structure. */
+@keyframes marquee-rev {
+  from { transform: translateX(-50%); }
+  to { transform: translateX(0); }
+}
+.marquee-track-rev { animation: marquee-rev 46s linear infinite; will-change: transform; }
+
+/* Hold both rows while the pointer is over the rail — otherwise a card slides
+   out from under the cursor before it can be read, let alone clicked. */
+.marquee-pause:hover .marquee-track,
+.marquee-pause:hover .marquee-track-rev {
+  animation-play-state: paused;
+}
+
+/* Dot texture for the dark rail; .hero-dots is keyed to navy and vanishes here. */
+.dots-on-navy {
+  background-image: radial-gradient(circle at 1px 1px, rgb(255 255 255 / 0.11) 1px, transparent 0);
+  background-size: 26px 26px;
+  -webkit-mask-image: radial-gradient(ellipse 85% 100% at 50% 50%, #000 25%, transparent 100%);
+  mask-image: radial-gradient(ellipse 85% 100% at 50% 50%, #000 25%, transparent 100%);
+}
+
+
+/* ---------------------------------------------------------------------------
+   FAQ disclosure
+
+   A native <details> snaps its content open with no transition, which reads as
+   a jump on a stack of four. The answer can't be height-animated portably
+   (its height is auto and only `::details-content` in newer browsers can
+   interpolate it), so this fades and eases it down instead — cheap, and it
+   degrades to an instant open wherever the animation doesn't run.
+--------------------------------------------------------------------------- */
+@keyframes faq-reveal {
+  from { opacity: 0; transform: translateY(-0.35rem); }
+  to { opacity: 1; transform: none; }
+}
+details[open] > .faq-body {
+  animation: faq-reveal 0.3s var(--ease-out-soft);
 }
 
 /* Scroll-margin so in-page nav clears the sticky header */
@@ -379,7 +527,8 @@ dialog.modal[open]::backdrop { opacity: 1; }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .marquee-track { animation: none; }
+  .marquee-track,
+  .marquee-track-rev { animation: none; }
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;

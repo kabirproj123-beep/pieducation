@@ -46,15 +46,22 @@ export function Reveal({
   );
 }
 
-/** Counts from 0 to `to` the first time it scrolls into view. */
+/**
+ * Counts from 0 to `to` the first time it scrolls into view.
+ *
+ * `decimals` is for figures that lose meaning when rounded to a whole number —
+ * a package of ₹21.8 LPA shown as "₹22 LPA" overstates it.
+ */
 export function CountUp({
   to,
   suffix = "",
+  decimals = 0,
   duration = 1.4,
   className = "",
 }: {
   to: number;
   suffix?: string;
+  decimals?: number;
   duration?: number;
   className?: string;
 }) {
@@ -68,14 +75,17 @@ export function CountUp({
     const controls = animate(0, to, {
       duration,
       ease: "easeOut",
-      onUpdate: (v) => setValue(Math.round(v)),
+      onUpdate: setValue,
     });
     return () => controls.stop();
   }, [inView, reduced, to, duration]);
 
   return (
     <span ref={ref} className={className}>
-      {value.toLocaleString("en-IN")}
+      {value.toLocaleString("en-IN", {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals,
+      })}
       {suffix}
     </span>
   );

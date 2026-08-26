@@ -68,7 +68,7 @@ export default async function AdminCollegesPage(props: {
       <div className="space-y-4 p-4 sm:p-6">
         {source === "bundled" && (
           <p className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-800">
-            Editing is unavailable — changes to a college won&apos;t save. The public site is
+            Editing is unavailable, so changes to a college won&apos;t save. The public site is
             still showing this list. Ask your developer to check the site&apos;s database
             connection.
           </p>
