@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { collegesSource, getAllColleges } from "@/lib/collegeStore";
 import { hasVerifiedFee } from "@/lib/colleges";
+import { collegeCover } from "@/lib/images";
 import PageHeader from "../_components/PageHeader";
 import CollegesTable, { type CollegeRow } from "./CollegesTable";
 
@@ -11,7 +12,11 @@ export const dynamic = "force-dynamic";
 /**
  * Fetches the catalogue and projects it down to the columns the table shows —
  * ~25 KB rather than the 640 KB the full records would cost — then lets the
- * browser do the filtering. `saved` and `deleted` still arrive in the query
+ * browser do the filtering.
+ *
+ * The cover photo is resolved here rather than in the table so the seeded
+ * Wikimedia metadata (17 KB, mostly article extracts nobody renders) stays on
+ * the server; the row carries only what the thumbnail needs. `saved` and `deleted` still arrive in the query
  * string, because they're set by a redirect after a Server Action.
  */
 export default async function AdminCollegesPage(props: {
@@ -27,24 +32,32 @@ export default async function AdminCollegesPage(props: {
   const source = await collegesSource();
 
   const rows: CollegeRow[] = all
-    .map((c) => ({
-      slug: c.slug,
-      name: c.name,
-      shortName: c.short_name,
-      stream: c.stream,
-      city: c.city ?? null,
-      nirf: c.nirf_rank ?? null,
-      fee: c.total_fee_value ?? null,
-      feeVerified: hasVerifiedFee(c),
-      updatedAt: c.updatedAt ?? null,
-    }))
+    .map((c) => {
+      const cover = collegeCover(c);
+      return {
+        slug: c.slug,
+        name: c.name,
+        shortName: c.short_name,
+        stream: c.stream,
+        city: c.city ?? null,
+        nirf: c.nirf_rank ?? null,
+        fee: c.total_fee_value ?? null,
+        feeVerified: hasVerifiedFee(c),
+        updatedAt: c.updatedAt ?? null,
+        cover: cover ? { kind: cover.kind, src: cover.src } : null,
+        uploads: c.images?.length ?? 0,
+      };
+    })
     .sort((a, b) => a.name.localeCompare(b.name));
+
+  const withUploads = rows.filter((r) => r.uploads > 0).length;
+  const noPhoto = rows.filter((r) => !r.cover).length;
 
   return (
     <>
       <PageHeader
         title="Colleges"
-        sub={`${all.length} in the catalogue`}
+        sub={`${all.length} in the catalogue · ${withUploads} with uploaded photos · ${noPhoto} with none`}
         actions={
           <Link href="/admin/colleges/new" className="btn btn-primary px-4 py-2 text-sm">
             Add college

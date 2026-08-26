@@ -27,7 +27,9 @@ repo. Leads, admin sign-in and editing colleges all need Firebase Firestore:
 fill in the `FIREBASE_*` variables and restart. The catalogue already lives in
 Firestore; with an empty `admins` collection, `/admin/login` offers a "create
 first admin" form that writes the account straight to the database. No
-credentials live in env — accounts are managed from `/admin/team`.
+credentials live in env — accounts are managed from `/admin/team`. Uploading
+college photos additionally needs the three `*CLOUDINARY*` variables; see
+[Photography](#photography).
 
 ## The data
 
@@ -127,9 +129,34 @@ These are now editable — anything upstream left blank can be filled in at
 
 ### Photography
 
-The reference site has photos for **0** of the 165 Maharashtra colleges, so
-images come from Wikipedia/Wikimedia Commons instead — freely licensed, stored
-locally in `public/colleges`, and credited on each page as the licences require.
+Photos come from two places, in priority order.
+
+**Uploads.** `/admin/colleges` has a Photos panel: an admin uploads through the
+Cloudinary widget, sets alt text and a credit per photo, and moves the cover to
+the top with the ↑/↓ buttons. The record stores only the Cloudinary public id,
+never a URL — the delivery URL carries the size, format and quality and is
+rebuilt per render, so one upload serves both a card thumbnail and a full-width
+hero. The first photo is the cover; the rest become a "Campus photos" section on
+the college page.
+
+Uploads are *signed*, not preset-based: the browser asks
+`/api/admin/cloudinary/sign` to sign each one, and only a signed-in admin gets a
+signature. An unsigned preset would let anyone who found the cloud name write
+into the account. The signing route also confines uploads to the
+`pieducations/colleges` folder and refuses a stale timestamp. Set
+`NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`, `NEXT_PUBLIC_CLOUDINARY_API_KEY` and
+`CLOUDINARY_API_SECRET` to enable it; with them absent the panel says so and the
+site falls back to the set below.
+
+Removing a photo in the admin panel unlinks it, leaving the file in the Media
+Library — a mis-click shouldn't destroy an asset. Tidying up is a Cloudinary
+console job.
+
+**The seeded Wikimedia set.** The reference site has photos for **0** of the 165
+Maharashtra colleges, so the fallback images come from Wikipedia/Wikimedia
+Commons — freely licensed, stored locally in `public/colleges`, and credited on
+each page as the licences require. A college with uploads ignores this set
+entirely.
 
 **28 colleges have a verified photo.** Coverage is deliberately partial. Naive
 search matched IIM Nagpur to VNIT Nagpur (shared "Nagpur"), a Russian
@@ -145,8 +172,8 @@ match kept it. Matches also required a distinctive (≥6 char) word from the
 college name in the page title, ≥60% token overlap, and the article's own
 opening text to mention the college's city or Maharashtra.
 
-Colleges without a confident match render a deterministic gradient. No photo
-beats the wrong photo.
+Colleges with neither an upload nor a confident match render a deterministic
+gradient. No photo beats the wrong photo.
 
 ## Lead capture
 
@@ -291,7 +318,6 @@ Restrained by design, and all of it honours `prefers-reduced-motion`:
 ## Not built yet
 
 - CSV export of leads
-- Uploading a college photo from `/admin/colleges` (images are still filesystem)
 - Student reviews (the ratings shown come from source data, 29 of 192 colleges)
 - Cutoffs and exam dates — deliberately omitted, since stale numbers are worse
   than none

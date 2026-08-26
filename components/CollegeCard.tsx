@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import { CollegePhoto } from "@/components/CollegePhoto";
 import { formatINR, formatLPA, hasVerifiedFee, type College } from "@/lib/colleges";
 import { getImage } from "@/lib/images";
 import { gradientFor, initials } from "@/lib/avatar";
@@ -19,7 +19,7 @@ import { gradientFor, initials } from "@/lib/avatar";
  * thing on the tile and shouldn't take a line of body space from the figures.
  */
 export function CollegeCard({ college: c }: { college: College }) {
-  const img = getImage(c.slug);
+  const cover = collegeCover(c);
   const verified = hasVerifiedFee(c);
   const name = c.short_name || c.name;
 

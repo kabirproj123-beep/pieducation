@@ -18,6 +18,25 @@ export type Course = {
   popular: boolean;
 };
 
+/**
+ * A photo uploaded through the admin panel and delivered by Cloudinary.
+ *
+ * Only the public id is stored, never a delivery URL. The URL carries the
+ * transformation — size, format, quality — and is rebuilt per render, so one
+ * record serves both a 320px card thumbnail and a 1600px hero without the
+ * database knowing anything about either.
+ */
+export type CollegeImage = {
+  public_id: string;
+  width: number | null;
+  height: number | null;
+  format: string | null;
+  /** Alt text; falls back to the college name when the admin leaves it blank. */
+  alt: string | null;
+  /** Credit line, for photos the client didn't shoot themselves. */
+  credit: string | null;
+};
+
 export type SelectionStep = { title: string; body: string };
 export type Faq = { q: string; a: string };
 
@@ -54,6 +73,8 @@ export type College = {
   faculty_count: string | null;
   entrance_exams: string[];
   facilities: string[];
+  /** Admin-uploaded photos, cover first. Empty means fall back to lib/images. */
+  images: CollegeImage[];
   selection_steps: SelectionStep[];
   courses: Course[];
   faqs: Faq[];
@@ -273,6 +294,20 @@ export function normaliseCollege(raw: unknown): College {
     faculty_count: str(r.faculty_count),
     entrance_exams: strList(r.entrance_exams),
     facilities: strList(r.facilities),
+    images: (Array.isArray(r.images) ? r.images : [])
+      .map((s) => {
+        const o = (s ?? {}) as Record<string, unknown>;
+        return {
+          public_id: str(o.public_id) ?? "",
+          width: num(o.width),
+          height: num(o.height),
+          format: str(o.format),
+          alt: str(o.alt),
+          credit: str(o.credit),
+        };
+      })
+      // A row without a public id can't be delivered, so it isn't an image.
+      .filter((i) => i.public_id),
     selection_steps: (Array.isArray(r.selection_steps) ? r.selection_steps : [])
       .map((s) => {
         const o = (s ?? {}) as Record<string, unknown>;
