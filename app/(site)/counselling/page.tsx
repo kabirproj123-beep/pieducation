@@ -3,7 +3,7 @@ import { LeadForm } from "@/components/LeadForm";
 import { getAllColleges } from "@/lib/collegeStore";
 
 export const metadata: Metadata = {
-  title: "Free Admission Counselling — Maharashtra CET, JEE, NEET & CLAT",
+  title: "Free Admission Counselling | Maharashtra CET, JEE, NEET & CLAT",
   description:
     "Free counselling for Maharashtra admissions: choice filling, cutoff strategy, category certificates and management-quota guidance.",
 };

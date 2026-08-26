@@ -30,7 +30,7 @@ function Password({ value, username }: { value: string | null; username: string 
   if (value === null) {
     return (
       <span className="text-xs text-faint">
-        Not readable — set a new one below, or it appears after {username} next signs in
+        Not readable. Set a new one below, or it appears after {username} next signs in
       </span>
     );
   }

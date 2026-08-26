@@ -5,7 +5,7 @@ import { citiesIn, selectColleges, STREAMS, type Sort } from "@/lib/colleges";
 import { getAllColleges } from "@/lib/collegeStore";
 
 export const metadata: Metadata = {
-  title: "Colleges in Maharashtra — Fees, Placements & Rankings",
+  title: "Colleges in Maharashtra | Fees, Placements & Rankings",
   description:
     "Browse every major college in Maharashtra. Filter by stream, city, ownership and fees. Compare NIRF rankings, total fees and average placement packages.",
 };
@@ -52,7 +52,7 @@ export default async function CollegesPage(props: {
           </h1>
           <p className="lede mt-3 max-w-2xl">
             {total} institutions across Engineering, Medical, Management, Law, Pharmacy and
-            Architecture — with real fees, placement packages and rankings.
+            Architecture, with real fees, placement packages and rankings.
           </p>
         </div>
       </div>

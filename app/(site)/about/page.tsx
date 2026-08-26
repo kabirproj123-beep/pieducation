@@ -6,7 +6,7 @@ import { site } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "About",
-  description: `${site.name} helps students across Maharashtra choose the right college with real fee, placement and ranking data — and free counselling.`,
+  description: `${site.name} helps students across Maharashtra choose the right college with real fee, placement and ranking data, plus free counselling.`,
 };
 
 export default async function AboutPage() {
@@ -31,7 +31,7 @@ export default async function AboutPage() {
           </h1>
           <p className="mt-3 max-w-2xl text-on-navy-dim">
             Most college websites are brochures. We publish the numbers that actually decide a
-            choice — total fees, average package, ranking — and say plainly where the data is thin.
+            choice (total fees, average package, ranking) and say plainly where the data is thin.
           </p>
         </div>
       </div>
@@ -82,7 +82,7 @@ export default async function AboutPage() {
                 format.
               </p>
               <p>
-                Some fields are genuinely missing for some colleges — we show a dash rather than
+                Some fields are genuinely missing for some colleges, so we show a dash rather than
                 inventing a number. Placement figures in particular are self-reported by
                 institutions and should be treated as indicative.
               </p>

@@ -3,7 +3,7 @@ import { LeadForm } from "@/components/LeadForm";
 import { abroadPartners, destinations } from "@/lib/content";
 
 export const metadata: Metadata = {
-  title: "Study Abroad — Pathways, Twinning Programmes & Applications",
+  title: "Study Abroad | Pathways, Twinning Programmes & Applications",
   description:
     "Study abroad from Maharashtra: direct applications across major destinations, plus twinning and credit-transfer pathways through leading Indian universities.",
 };
@@ -15,7 +15,7 @@ export default function StudyAbroadPage() {
         <div className="container-x py-12">
           <p className="eyebrow text-brand">Study abroad</p>
           <h1 className="display-lg mt-2 max-w-3xl font-display">
-            A degree abroad — directly, or through a pathway
+            A degree abroad, directly or through a pathway
           </h1>
           <p className="mt-3 max-w-2xl text-on-navy-dim">
             There are two honest routes out: apply directly to a foreign university, or start in
@@ -49,7 +49,7 @@ export default function StudyAbroadPage() {
             <h2 className="display-md font-display">Twinning &amp; pathway partners in India</h2>
             <p className="lede mt-2">
               Start in India, finish abroad. These universities run credit-transfer and
-              semester-abroad routes to foreign degrees — a cheaper way to the same qualification.
+              semester-abroad routes to foreign degrees, a cheaper way to the same qualification.
             </p>
             <div className="mt-5 grid gap-3 sm:grid-cols-3">
               {abroadPartners.map((p) => (
@@ -63,8 +63,8 @@ export default function StudyAbroadPage() {
               ))}
             </div>
             <p className="mt-3 text-xs text-faint">
-              These are outside Maharashtra and are not part of our Maharashtra college database —
-              they appear here only as pathway options. Programme availability changes each intake;
+              These are outside Maharashtra and are not part of our Maharashtra college database.
+              They appear here only as pathway options. Programme availability changes each intake;
               confirm with a counsellor.
             </p>
           </section>

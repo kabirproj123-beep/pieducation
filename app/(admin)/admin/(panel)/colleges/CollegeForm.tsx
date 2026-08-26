@@ -279,7 +279,7 @@ export default function CollegeForm({
 
       <Section
         title="Ranking & fees"
-        description="Fees only appear as a figure when confidence is High — see the note below."
+        description="Fees only appear as a figure when confidence is High. See the note below."
       >
         <Field label="NIRF rank">
           <input {...number("nirf_rank")} placeholder="41" />
@@ -287,7 +287,7 @@ export default function CollegeForm({
         <Field label="Total fee (display text)">
           <input {...text("total_fee")} placeholder="₹3.4 Lakhs" />
         </Field>
-        <Field label="Total fee (rupees)" hint="Digits only — used for sorting and filtering.">
+        <Field label="Total fee (rupees)" hint="Digits only, used for sorting and filtering.">
           <input {...number("total_fee_value")} placeholder="340000" />
         </Field>
         <Field
@@ -299,8 +299,8 @@ export default function CollegeForm({
             onChange={(e) => set({ fee_confidence: e.target.value as "high" | "low" })}
             className={INPUT}
           >
-            <option value="low">Low — don&apos;t show a number</option>
-            <option value="high">High — verified, safe to show</option>
+            <option value="low">Low (don&apos;t show a number)</option>
+            <option value="high">High (verified, safe to show)</option>
           </select>
         </Field>
         <Field label="Fee applies to" hint="Which programme the figure covers.">

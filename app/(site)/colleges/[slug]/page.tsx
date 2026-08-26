@@ -35,7 +35,7 @@ export async function generateMetadata(props: {
   ].filter(Boolean);
 
   return {
-    title: `${c.short_name || c.name}, ${c.city} — Admissions, Fees & Placements`,
+    title: `${c.short_name || c.name}, ${c.city} | Admissions, Fees & Placements`,
     description:
       `${c.name} in ${c.city}, Maharashtra. ` +
       (bits.length ? `Check ${bits.join(", ")}, ` : "") +
@@ -284,7 +284,7 @@ export default async function CollegeDetailPage(props: {
                   <p className="mt-2 rounded-lg bg-amber-50 px-2.5 py-1.5 text-xs text-amber-800">
                     We couldn&apos;t verify this college&apos;s fees against a second source, so
                     we&apos;re not publishing a headline figure. The per-course figures below come
-                    from the college listing and may be out of date — confirm with the admission
+                    from the college listing and may be out of date. Confirm with the admission
                     office or ask a counsellor.
                   </p>
                 )}

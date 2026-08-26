@@ -41,7 +41,7 @@ export function LeadForm({
   title,
   note = "Your privacy is protected. Standard terms apply.",
   submitLabel = "Submit",
-  successTitle = "Thank you — we've got it.",
+  successTitle = "Thank you, we've got it.",
   successBody = "A counsellor will call you within 24 hours.",
   extraFields = [],
   hiddenMeta = {},

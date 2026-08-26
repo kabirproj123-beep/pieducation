@@ -27,12 +27,12 @@ const newsreader = Newsreader({
 export const metadata: Metadata = {
   metadataBase: new URL("https://example.com"),
   title: {
-    default: `${site.name} — ${site.tagline}`,
-    template: `%s — ${site.name}`,
+    default: `${site.name} | ${site.tagline}`,
+    template: `%s | ${site.name}`,
   },
   description: site.description,
   openGraph: {
-    title: `${site.name} — ${site.tagline}`,
+    title: `${site.name} | ${site.tagline}`,
     description: site.description,
     type: "website",
   },

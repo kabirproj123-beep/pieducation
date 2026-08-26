@@ -32,7 +32,7 @@ function Fee({ row }: { row: CollegeRow }) {
   return row.feeVerified ? (
     <span className="tabular-nums">{formatINR(row.fee)}</span>
   ) : (
-    <span className="text-faint" title="Fee not verified — hidden on the public page">
+    <span className="text-faint" title="Fee not verified, hidden on the public page">
       on request
     </span>
   );
