@@ -7,6 +7,7 @@
  * instead of silently falling back to a local JSON file.
  */
 import "server-only";
+import { unstable_cache, updateTag } from "next/cache";
 import { getAdminDb, isFirebaseConfigured } from "./firebaseAdmin";
 import { LEAD_SOURCES, type Lead, type LeadSource, type LeadStatus, type NewLead } from "./leadTypes";
 
@@ -16,6 +17,24 @@ import { LEAD_SOURCES, type Lead, type LeadSource, type LeadStatus, type NewLead
 export * from "./leadTypes";
 
 const COLLECTION = "leads";
+export const LEADS_TAG = "leads";
+
+/**
+ * How many leads the admin dashboard pulls, and for how long that read is
+ * reused.
+ *
+ * /admin is `force-dynamic`, so before this every visit to the panel's landing
+ * page billed one document read per lead, up to 500 — and the admin lands
+ * there after every save and every navigation. A morning's work could spend
+ * the whole day's free quota on the same rows over and over.
+ *
+ * A minute of cache collapses that burst to one read, and `LEADS_TAG` is
+ * cleared whenever a lead is created or its status changes, so an enquiry that
+ * arrives while the admin is looking still shows up on the next render rather
+ * than a minute later.
+ */
+const LEADS_PAGE = 200;
+const LEADS_TTL_SECONDS = 60;
 
 /* ----------------------------- validation ------------------------------ */
 
@@ -79,6 +98,10 @@ export async function createLead(input: NewLead): Promise<Lead> {
   const db = getAdminDb();
   if (db) {
     await db.collection(COLLECTION).doc(lead.id).set(lead);
+    // Deliberately no updateTag here. This runs in the /api/leads route
+    // handler, not a Server Action, and this is the path that captures the
+    // business's leads — it must not risk throwing to save the dashboard sixty
+    // seconds of staleness. The cache expires on its own that fast anyway.
     return lead;
   }
 
@@ -89,18 +112,27 @@ export async function createLead(input: NewLead): Promise<Lead> {
  * Empty rather than throwing: the admin page has a banner for exactly this
  * case, and it can't show it if reading the list takes the render down.
  */
-export async function listLeads(limit = 500): Promise<Lead[]> {
+export async function listLeads(limit = LEADS_PAGE): Promise<Lead[]> {
   const db = getAdminDb();
   if (!db) return [];
 
-  const snap = await db.collection(COLLECTION).orderBy("createdAt", "desc").limit(limit).get();
-  return snap.docs.map((d) => d.data() as Lead);
+  // Keyed by limit so a caller asking for more does not read back a shorter
+  // cached page.
+  return unstable_cache(
+    async () => {
+      const snap = await db.collection(COLLECTION).orderBy("createdAt", "desc").limit(limit).get();
+      return snap.docs.map((d) => d.data() as Lead);
+    },
+    ["leads", String(limit)],
+    { tags: [LEADS_TAG], revalidate: LEADS_TTL_SECONDS },
+  )();
 }
 
 export async function updateLeadStatus(id: string, status: LeadStatus): Promise<void> {
   const db = getAdminDb();
   if (db) {
     await db.collection(COLLECTION).doc(id).update({ status });
+    updateTag(LEADS_TAG);
     return;
   }
 
