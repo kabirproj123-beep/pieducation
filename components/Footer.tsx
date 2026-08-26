@@ -59,10 +59,35 @@ export function Footer() {
                   {site.email}
                 </a>
               </li>
-              <li>{site.address}</li>
+              {/* No address line — the map below carries it, pin and all. */}
             </ul>
 
             <SocialLinks className="mt-6" />
+
+            {/* The office on a map. Google's `output=embed` form needs no API
+                key, and the same query drives the "Get directions" link so the
+                pin and the link can never point at different places. */}
+            <div className="mt-6 overflow-hidden rounded-xl border border-line-navy">
+              <iframe
+                src={`https://maps.google.com/maps?q=${encodeURIComponent(site.address)}&z=16&output=embed`}
+                title={`${site.name} office location on Google Maps`}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="block h-44 w-full border-0"
+              />
+            </div>
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(site.address)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-brand hover:text-white"
+            >
+              Get directions
+              <svg aria-hidden viewBox="0 0 20 20" fill="currentColor" className="size-3.5">
+                <path d="M11 3a1 1 0 1 0 0 2h2.6l-6.3 6.3a1 1 0 1 0 1.4 1.4L15 6.4V9a1 1 0 1 0 2 0V4a1 1 0 0 0-1-1h-5Z" />
+                <path d="M5 5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-3a1 1 0 1 0-2 0v3H5V7h3a1 1 0 0 0 0-2H5Z" />
+              </svg>
+            </a>
           </div>
 
           {COLUMNS.map((col) => (
