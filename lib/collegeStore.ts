@@ -111,8 +111,46 @@ export async function collegesSource(): Promise<Source> {
   return (await readOrFallBack()).source;
 }
 
+/**
+ * One college, read as one document.
+ *
+ * This used to be `(await getAllColleges()).find(...)`, which is a whole-
+ * collection read — 192 billed document reads to return a single record. That
+ * is what made editing expensive: opening a college in the admin cost 192
+ * reads, saving it invalidated the collection cache, and the redirect back to
+ * the list spent another 192. Editing the catalogue once, to add photos, ran
+ * to roughly 384 reads per college and exhausted a day's free quota well
+ * before the last one.
+ *
+ * Documents are keyed by slug, so the lookup is a direct `doc(slug).get()`:
+ * one read, cached under its own key so a miss on one college does not drag
+ * the other 191 along with it. The shared COLLEGES_TAG still clears it on
+ * every save, so the admin keeps read-your-own-writes.
+ */
 export async function getCollege(slug: string): Promise<College | undefined> {
-  return (await getAllColleges()).find((c) => c.slug === slug);
+  const id = slugify(slug);
+  if (!id) return undefined;
+
+  const db = getAdminDb();
+  if (!db) return bundled.find((c) => c.slug === id);
+
+  try {
+    const doc = await unstable_cache(
+      async () => {
+        const snap = await db.collection(COLLECTION).doc(id).get();
+        return snap.exists ? (snap.data() as Record<string, unknown>) : null;
+      },
+      ["college", id],
+      { tags: [COLLEGES_TAG], revalidate: TTL_SECONDS },
+    )();
+
+    // A slug Firestore does not know may still be in the bundled seed — a
+    // college the catalogue has but nobody has saved through the admin yet.
+    return doc ? normaliseCollege(doc) : bundled.find((c) => c.slug === id);
+  } catch (err) {
+    console.error(`Firestore read failed for college "${id}"; using bundled data:`, err);
+    return bundled.find((c) => c.slug === id);
+  }
 }
 
 export async function getCities(): Promise<string[]> {
