@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CollegeGrid } from "@/components/CollegeGrid";
-import { citiesIn, selectColleges, STREAMS, type Sort } from "@/lib/colleges";
+import { citiesIn, searchColleges, STREAMS, type Sort } from "@/lib/colleges";
 import { getAllColleges } from "@/lib/collegeStore";
 
 export const metadata: Metadata = {
@@ -34,7 +34,9 @@ export default async function CollegesPage(props: {
   const sort = (one("sort") as Sort) ?? "rank";
 
   const all = await getAllColleges();
-  const results = selectColleges(all, { stream, city, ownership, q, sort });
+  // `relaxed` means nothing matched every word typed and these are the nearest
+  // matches — said out loud below rather than passed off as exact hits.
+  const { results, relaxed } = searchColleges(all, { stream, city, ownership, q, sort });
   const total = all.length;
   const cities = citiesIn(all);
 
@@ -65,11 +67,16 @@ export default async function CollegesPage(props: {
               <label htmlFor="q" className="mb-1 block text-xs font-semibold text-muted">
                 Search
               </label>
+              {/* `type="search"` for the clear button, `enterKeyHint` so a phone
+                  keyboard offers "Search" instead of a newline. */}
               <input
                 id="q"
                 name="q"
+                type="search"
+                enterKeyHint="search"
+                autoComplete="off"
                 defaultValue={q}
-                placeholder="College, city or stream…"
+                placeholder="College, city, course or exam…"
                 className={inputCls}
               />
             </div>
@@ -142,17 +149,31 @@ export default async function CollegesPage(props: {
           </div>
         </form>
 
-        <p className="mt-6 text-sm text-muted">
-          Showing <strong className="text-ink">{results.length}</strong>{" "}
-          {results.length === 1 ? "college" : "colleges"}
-          {stream !== "All" && ` in ${stream}`}
-          {city !== "All" && ` · ${city}`}
-        </p>
+        <div className="mt-6 text-sm text-muted">
+          <p>
+            Showing <strong className="text-ink">{results.length}</strong>{" "}
+            {results.length === 1 ? "college" : "colleges"}
+            {q && ` for “${q}”`}
+            {stream !== "All" && ` in ${stream}`}
+            {city !== "All" && ` · ${city}`}
+          </p>
+          {relaxed && results.length > 0 ? (
+            <p className="mt-1 text-xs">
+              No college matches every word of that search, so these are the closest matches.
+            </p>
+          ) : null}
+        </div>
 
         {results.length === 0 ? (
           <div className="card mt-4 p-12 text-center">
-            <p className="font-display text-lg font-bold">No colleges match those filters</p>
-            <p className="mt-1 text-sm text-muted">Try widening your search or clearing filters.</p>
+            <p className="font-display text-lg font-bold">
+              {q ? `Nothing found for “${q}”` : "No colleges match those filters"}
+            </p>
+            <p className="mt-1 text-sm text-muted">
+              {q
+                ? "Try a college name, a city like Pune or Mumbai, a course such as MBBS or B.Tech, or an entrance exam."
+                : "Try widening your search or clearing filters."}
+            </p>
             <Link href="/colleges" className="btn btn-primary mt-4 px-4 py-2 text-sm">
               Clear filters
             </Link>

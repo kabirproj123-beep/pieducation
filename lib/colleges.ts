@@ -151,7 +151,177 @@ export function countByStreamIn(colleges: College[]): Record<string, number> {
   return out;
 }
 
-export function selectColleges(colleges: College[], f: Filters): College[] {
+/* ---------------------------------------------------------------------- */
+/* Search                                                                  */
+/* ---------------------------------------------------------------------- */
+
+/**
+ * Abbreviations a visitor types that the catalogue never spells that way.
+ *
+ * Course records write programmes out in full — "Bachelor of Medicine and
+ * Bachelor of Surgery", never "MBBS" — so an abbreviation matches nothing
+ * unless it is expanded first. The site links to `/colleges?q=MBBS` from the
+ * homepage's own popular-search chips, and every one of those landed on "No
+ * colleges match those filters".
+ */
+const SEARCH_ALIASES: Record<string, string[]> = {
+  mbbs: ["medicine", "surgery", "medical"],
+  md: ["medical"],
+  ms: ["medical"],
+  bds: ["dental", "dentistry"],
+  mds: ["dental", "dentistry"],
+  mba: ["business", "administration", "management"],
+  pgdm: ["business", "administration", "management"],
+  bba: ["business", "administration", "management"],
+  bms: ["business", "administration", "management"],
+  btech: ["technology", "engineering"],
+  mtech: ["technology", "engineering"],
+  be: ["engineering"],
+  me: ["engineering"],
+  engg: ["engineering"],
+  eng: ["engineering"],
+  llb: ["law"],
+  llm: ["law"],
+  bpharm: ["pharmacy", "pharmaceutical"],
+  mpharm: ["pharmacy", "pharmaceutical"],
+  pharma: ["pharmacy", "pharmaceutical"],
+  barch: ["architecture"],
+  march: ["architecture"],
+  arch: ["architecture"],
+  govt: ["government"],
+  pvt: ["private"],
+  bsc: ["science"],
+  msc: ["science"],
+};
+
+/** Filler that shouldn't reach an acronym: "College of Engineering" → "ce". */
+const ACRONYM_SKIP = new Set(["of", "and", "the", "for", "in", "at", "a"]);
+
+/**
+ * Lowercase, punctuation dropped, single-spaced.
+ *
+ * Dots are deleted rather than turned into spaces, so "B.Tech" and "D.J."
+ * tokenise the way a visitor types them — "btech", "dj" — and the same rule
+ * applied to the catalogue makes "D.J. Sanghvi" reachable as "DJ Sanghvi".
+ */
+function normaliseText(v: string): string {
+  return v
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/\./g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+/** Eight words is more than any real query; the rest is noise. */
+function tokenise(q: string): string[] {
+  return normaliseText(q).split(" ").filter(Boolean).slice(0, 8);
+}
+
+/**
+ * Everything a college can be found by, as one normalised string with a
+ * leading space so a word-start test is a plain `includes`.
+ *
+ * Cached per record: the list is re-filtered on every request and the string
+ * only changes when the record does.
+ */
+const searchTextCache = new WeakMap<College, string>();
+
+function searchText(c: College): string {
+  const cached = searchTextCache.get(c);
+  if (cached !== undefined) return cached;
+
+  const words = normaliseText(c.name).split(" ").filter(Boolean);
+  const acronym = words
+    .filter((w) => !ACRONYM_SKIP.has(w))
+    .map((w) => w[0])
+    .join("");
+
+  const text =
+    " " +
+    normaliseText(
+      [
+        c.name,
+        c.short_name,
+        acronym,
+        c.city,
+        c.stream,
+        c.ownership,
+        c.affiliation,
+        c.approved_by,
+        c.tagline,
+        ...c.courses.map((x) => x.name),
+        ...c.entrance_exams,
+      ]
+        .filter(Boolean)
+        .join(" "),
+    );
+
+  searchTextCache.set(c, text);
+  return text;
+}
+
+/**
+ * A word matches where it *starts* a word, never mid-word.
+ *
+ * The old search was a raw substring test, which made "MBA" return all 70
+ * colleges in Mu-mba-i and none of the management schools.
+ */
+function hasToken(text: string, token: string): boolean {
+  if (text.includes(" " + token)) return true;
+  const aliases = SEARCH_ALIASES[token];
+  return aliases !== undefined && aliases.some((a) => text.includes(" " + a));
+}
+
+function matchCount(c: College, tokens: string[]): number {
+  const text = searchText(c);
+  let n = 0;
+  for (const t of tokens) if (hasToken(text, t)) n++;
+  return n;
+}
+
+/**
+ * How well a college answers the query, so that searching "IIT Bombay" puts
+ * IIT Bombay first rather than wherever NIRF order happens to leave it.
+ *
+ * `categorical` is a query that names a whole group rather than an institution
+ * — "MBA", "Pune", "Law". Those score flat so NIRF ranking orders them;
+ * otherwise a college with "MBA" in its short name would outrank every serious
+ * business school, and any college with "Pune" in its name would outrank the
+ * ones actually in Pune.
+ */
+function relevance(c: College, q: string, tokens: string[], categorical: boolean): number {
+  if (categorical) return 0;
+
+  const name = normaliseText(c.name);
+  const short = normaliseText(c.short_name);
+  if (name === q || short === q) return 100;
+  if (name.startsWith(q) || short.startsWith(q)) return 80;
+  if (` ${name} ${short}`.includes(" " + q)) return 60;
+
+  const named = ` ${name} ${short} ${normaliseText(c.city ?? "")} ${normaliseText(c.stream)}`;
+  const inName = tokens.filter((t) => hasToken(named, t)).length;
+  if (inName === tokens.length) return 40;
+  return 10 + inName * 5;
+}
+
+export type SearchOutcome = {
+  results: College[];
+  /**
+   * True when nothing matched every word and these are the closest matches
+   * instead. The page says so rather than passing them off as exact hits.
+   */
+  relaxed: boolean;
+};
+
+/**
+ * Filter, search and sort in one pass.
+ *
+ * Words are ANDed: "engineering pune" means both, which the old substring
+ * search could never express — it looked for the literal phrase and found
+ * nothing.
+ */
+export function searchColleges(colleges: College[], f: Filters): SearchOutcome {
   let out = colleges;
 
   if (f.stream && f.stream !== "All") out = out.filter((c) => c.stream === f.stream);
@@ -164,24 +334,45 @@ export function selectColleges(colleges: College[], f: Filters): College[] {
     // by several multiples and would silently exclude the wrong colleges.
     out = out.filter((c) => hasVerifiedFee(c) && c.total_fee_value! <= f.maxFee!);
   }
-  if (f.q) {
-    const q = f.q.trim().toLowerCase();
-    if (q) {
-      out = out.filter(
-        (c) =>
-          c.name.toLowerCase().includes(q) ||
-          c.short_name.toLowerCase().includes(q) ||
-          (c.city ?? "").toLowerCase().includes(q) ||
-          c.stream.toLowerCase().includes(q),
-      );
+
+  const q = normaliseText(f.q ?? "");
+  const tokens = q ? tokenise(q) : [];
+  const score = new Map<College, number>();
+  let relaxed = false;
+
+  if (tokens.length) {
+    const scored = out.map((c) => ({ c, n: matchCount(c, tokens) }));
+    let hits = scored.filter((x) => x.n === tokens.length);
+
+    // Nothing matched every word. An empty page is the least useful answer, so
+    // fall back to whatever matched the most of them: "DJ Sanghvi Andheri"
+    // still finds DJ Sanghvi, and the page labels the result set as
+    // approximate.
+    if (hits.length === 0 && tokens.length > 1) {
+      const best = Math.max(...scored.map((x) => x.n));
+      if (best > 0) {
+        hits = scored.filter((x) => x.n === best);
+        relaxed = true;
+      }
     }
+
+    // One word that names a stream, a city or a programme is a browse, not a
+    // hunt for a particular college.
+    const categorical =
+      tokens.length === 1 &&
+      (SEARCH_ALIASES[tokens[0]!] !== undefined ||
+        (STREAMS as readonly string[]).some((s) => normaliseText(s) === q) ||
+        colleges.some((c) => normaliseText(c.city ?? "") === q));
+
+    out = hits.map((x) => x.c);
+    for (const c of out) score.set(c, relevance(c, q, tokens, categorical));
   }
 
   const sort = f.sort ?? "rank";
   // Unverified fees must not participate in fee ordering, or a college whose
   // real fee is 8x the stored one appears at the top of "cheapest first".
   const fee = (c: College) => (hasVerifiedFee(c) ? c.total_fee_value! : null);
-  return [...out].sort((a, b) => {
+  const results = [...out].sort((a, b) => {
     switch (sort) {
       case "fee-low":
         return (fee(a) ?? LAST) - (fee(b) ?? LAST);
@@ -193,6 +384,14 @@ export function selectColleges(colleges: College[], f: Filters): College[] {
         return a.name.localeCompare(b.name);
       case "rank":
       default: {
+        // "NIRF ranking" is the default sort, so it is also what a search
+        // lands on. Ranking a search by NIRF alone buries the college the
+        // visitor typed, so how well the record answered the query comes
+        // first — an explicitly chosen sort above is still obeyed exactly.
+        const as = score.get(a) ?? 0;
+        const bs = score.get(b) ?? 0;
+        if (as !== bs) return bs - as;
+
         const ar = a.nirf_rank || LAST;
         const br = b.nirf_rank || LAST;
         if (ar !== br) return ar - br;
@@ -204,6 +403,12 @@ export function selectColleges(colleges: College[], f: Filters): College[] {
       }
     }
   });
+
+  return { results, relaxed };
+}
+
+export function selectColleges(colleges: College[], f: Filters): College[] {
+  return searchColleges(colleges, f).results;
 }
 
 /** Top colleges for a stream — used by the homepage rails and /rankings. */
